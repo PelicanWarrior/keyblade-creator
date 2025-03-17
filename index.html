@@ -112,7 +112,7 @@
             </div>
             <div>
                 <label for="path">Path:</label>
-                <select id="path" onchange="updateDescription('path')">
+                <select id="path" onchange="updateDescription('path'); updateAbilitiesBasedOnRole();">
                     <option value="" disabled selected>Select a Path</option>
                     <option value="Light Bearer">Light Bearer</option>
                     <option value="Shadow Striker">Shadow Striker</option>
@@ -250,11 +250,45 @@
         let totalAP = 5; // Initial AP value
         let remainingAP = totalAP;
         let selectedAbilities = [];
+        let currentRoleAbilities = [];
 
-        const abilityData = {
-            "Star Seeker": { apCost: 1, description: "A star-tipped blade pulsing with magical potential, tied to Mickey's lineage." },
-            "Restore MP": { apCost: 2, description: "Restore 2 MP once per session. A mystic gem for Spellblades." },
-            "Shield Boost": { apCost: 3, description: "Increase defense by 1 for one encounter. A protective ward for Stalwart Blades." }
+        const roleAbilities = {
+            "Light Bearer": {
+                "Combo Strike": { apCost: 1, description: "When you hit with a Keyblade attack, roll 1d6. If it’s equal to or less than your Strength, deal extra damage equal to your Luck." },
+                "Bond of Light": { apCost: 2, description: "Once per encounter, spend 1 MP to restore 2 HP to an ally whose HP is below half." },
+                "Radiant Edge": { apCost: 2, description: "Spend 1 MP to deal +3 Fire damage on your next Keyblade attack, illuminating the battlefield." },
+                "Shining Guard": { apCost: 1, description: "Once per encounter, reduce damage you take by your Luck until your next turn." }
+            },
+            "Shadow Striker": {
+                "Dark Slash": { apCost: 2, description: "Spend 1 MP to add your Luck to your Strength for one attack’s damage, but lose 1 HP from the effort." },
+                "Defiant Edge": { apCost: 1, description: "When your HP drops below half, your next Keyblade attack deals +2 damage." },
+                "Abyssal Bolt": { apCost: 2, description: "Spend 1 MP to deal +3 Thunder damage on your next Keyblade attack, crackling with dark energy." },
+                "Shadow Step": { apCost: 1, description: "Once per encounter, roll 1d6. If it’s equal to or less than your Luck, avoid the next attack against you." }
+            },
+            "Spellblade": {
+                "Spell Strike": { apCost: 2, description: "Spend 1 MP to add your MP score to your next Keyblade attack’s damage." },
+                "Arcane Surge": { apCost: 1, description: "Once per encounter, roll 1d6 after hitting with a Keyblade. If it’s equal to or less than your Luck, regain 1 MP." },
+                "Frost Blade": { apCost: 2, description: "Spend 1 MP to deal +3 Blizzard damage on your next Keyblade attack, chilling your foe." },
+                "Mending Light": { apCost: 2, description: "Spend 2 MP to restore HP equal to your MP score to yourself or an ally, once per encounter." }
+            },
+            "Stalwart Blade": {
+                "Guard Strike": { apCost: 1, description: "Attack with your Keyblade and reduce the next attack’s damage against an ally by your Defense." },
+                "Heart’s Wall": { apCost: 2, description: "Once per encounter, when an ally takes damage, redirect half of it (rounded down) to yourself." },
+                "Taunting Blade": { apCost: 2, description: "Spend 1 MP to force an enemy to attack you with its next action, drawing their ire with a defiant strike." },
+                "Iron Stance": { apCost: 1, description: "Once per encounter, increase your Defense by 2 until your next turn." }
+            },
+            "Swift Blade": {
+                "Lucky Evade": { apCost: 2, description: "When an attack would hit you, roll 1d6. If it’s equal to or less than your Luck, avoid the damage." },
+                "Double Slash": { apCost: 1, description: "Attack with your Keyblade and roll 1d6. If it’s equal to or less than your Strength, make a second attack for free." },
+                "Wind Cutter": { apCost: 2, description: "Spend 1 MP to deal +3 damage on your next Keyblade attack, slashing with a gust of wind." },
+                "Fleet Foot": { apCost: 1, description: "Once per encounter, roll 1d6. If it’s equal to or less than your Luck, move to any position without penalty." }
+            },
+            "Time Blade": {
+                "Chrono Slash": { apCost: 2, description: "Spend 1 MP to force an enemy to reroll its last attack or action. You choose which result they keep." },
+                "Time Ward": { apCost: 1, description: "Once per encounter, roll 1d6. If it’s equal to or less than your Luck, reduce the next damage you or an ally takes by your Defense." },
+                "Thunder Pulse": { apCost: 2, description: "Spend 1 MP to deal +3 Thunder damage on your next Keyblade attack, striking with timed precision." },
+                "Moment’s Grace": { apCost: 2, description: "Spend 1 MP to act again immediately after your turn, once per encounter." }
+            }
         };
 
         const descriptions = {
@@ -315,15 +349,41 @@
                 const abilityDescId = `abilityDescription-${i}`;
                 const abilityValue = document.getElementById(abilityId) ? document.getElementById(abilityId).value : '';
                 const descItem = document.getElementById(abilityDescId);
-                if (abilityValue && abilityData[abilityValue]) {
+                if (abilityValue && currentRoleAbilities[abilityValue]) {
                     descItem.style.display = 'block';
-                    descItem.innerHTML = abilityData[abilityValue].description;
+                    descItem.innerHTML = currentRoleAbilities[abilityValue].description;
                     const rect = document.getElementById(abilityId).getBoundingClientRect();
                     descItem.style.top = `${rect.top + window.scrollY - 90}px`;
                     descItem.style.left = `${0}px`;
                 } else {
                     descItem.style.display = 'none';
                 }
+            }
+        }
+
+        function updateAbilitiesBasedOnRole() {
+            const role = document.getElementById('path').value;
+            if (role && roleAbilities[role]) {
+                currentRoleAbilities = roleAbilities[role];
+                selectedAbilities = [];
+                remainingAP = totalAP;
+                document.getElementById('ap-left').textContent = remainingAP;
+                document.getElementById('abilities').style.display = 'block';
+                for (let i = 1; i <= 3; i++) {
+                    const abilityDiv = document.getElementById(`ability-${i}`);
+                    if (i === 1) {
+                        abilityDiv.style.display = 'block';
+                    } else {
+                        abilityDiv.style.display = 'none';
+                    }
+                }
+                updateAbilityDropdowns();
+            } else {
+                document.getElementById('abilities').style.display = 'none';
+                currentRoleAbilities = {};
+                selectedAbilities = [];
+                remainingAP = totalAP;
+                document.getElementById('ap-left').textContent = remainingAP;
             }
         }
 
@@ -399,7 +459,6 @@
             document.getElementById('luck').textContent = '-';
             remainingAP = totalAP;
             selectedAbilities = [];
-            document.getElementById('abilities').style.display = 'block'; // Show abilities after roll
             document.getElementById('ap-left').textContent = remainingAP;
             updateAbilityDropdowns();
 
@@ -449,8 +508,8 @@
                     if (!currentAbility) optDefault.selected = true;
                     select.appendChild(optDefault);
 
-                    for (let ability in abilityData) {
-                        const apCost = abilityData[ability].apCost;
+                    for (let ability in currentRoleAbilities) {
+                        const apCost = currentRoleAbilities[ability].apCost;
                         if (apCost <= remainingAP) {
                             const opt = document.createElement('option');
                             opt.value = ability;
@@ -477,11 +536,11 @@
             if (ability) {
                 // Remove previous ability if it exists
                 const previousAbility = selectedAbilities[index - 1];
-                if (previousAbility && abilityData[previousAbility]) {
-                    remainingAP += abilityData[previousAbility].apCost;
+                if (previousAbility && currentRoleAbilities[previousAbility]) {
+                    remainingAP += currentRoleAbilities[previousAbility].apCost;
                 }
                 selectedAbilities[index - 1] = ability;
-                remainingAP -= abilityData[ability].apCost;
+                remainingAP -= currentRoleAbilities[ability].apCost;
                 document.getElementById('ap-left').textContent = remainingAP;
                 character.abilities = selectedAbilities.filter(a => a); // Update character abilities
                 updateDescription('ability'); // Update ability description
@@ -489,7 +548,7 @@
             } else if (selectedAbilities[index - 1]) {
                 // Unassign ability
                 const previousAbility = selectedAbilities[index - 1];
-                remainingAP += abilityData[previousAbility].apCost;
+                remainingAP += currentRoleAbilities[previousAbility].apCost;
                 selectedAbilities[index - 1] = null;
                 document.getElementById('ap-left').textContent = remainingAP;
                 character.abilities = selectedAbilities.filter(a => a);

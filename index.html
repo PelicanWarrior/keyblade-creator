@@ -332,7 +332,10 @@
             if (value) {
                 character[stat] = value;
                 document.getElementById(stat).textContent = value;
-                availableRolls = availableRolls.filter(roll => roll !== value); // Remove assigned roll
+                const index = availableRolls.indexOf(value); // Find the first occurrence
+                if (index !== -1) {
+                    availableRolls.splice(index, 1); // Remove only the first instance
+                }
                 updateStatDropdowns(); // Update other dropdowns
             }
         }

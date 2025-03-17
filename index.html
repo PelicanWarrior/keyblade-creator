@@ -77,6 +77,11 @@
             flex: 1;
             min-width: 0; /* Allow wrapping if needed */
         }
+        .stat-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
         #dice-rolls {
             margin: 5px 0;
             font-style: italic;
@@ -116,17 +121,27 @@
                 <button onclick="rollStats()">Roll Stats</button>
                 <div id="dice-rolls"></div>
                 <div id="stats">
-                    <div class="stat-group">
-                        <p>HP: <span id="hp">-</span></p>
-                        <p>MP: <span id="mp">-</span> <select id="mp-select" class="stat-select" onchange="assignStat('mp')"></select></p>
-                        <p>Str: <span id="str">-</span> <select id="str-select" class="stat-select" onchange="assignStat('str')"></select></p>
+                    <div class="stat-row">
+                        <div class="stat-group">
+                            <p>HP: <span id="hp">-</span></p>
+                            <p>MP: <span id="mp">-</span> <select id="mp-select" class="stat-select" onchange="assignStat('mp')"></select></p>
+                        </div>
+                        <div class="stat-group">
+                            <p>Def: <span id="def">-</span> <select id="def-select" class="stat-select" onchange="assignStat('def')"></select></p>
+                        </div>
                     </div>
-                    <div class="stat-group">
-                        <p>Def: <span id="def">-</span> <select id="def-select" class="stat-select" onchange="assignStat('def')"></select></p>
-                        <p>AP: <span id="ap">-</span> <select id="ap-select" class="stat-select" onchange="assignStat('ap')"></select></p>
+                    <div class="stat-row">
+                        <div class="stat-group">
+                            <p>Str: <span id="str">-</span> <select id="str-select" class="stat-select" onchange="assignStat('str')"></select></p>
+                        </div>
+                        <div class="stat-group">
+                            <p>AP: <span id="ap">-</span> <select id="ap-select" class="stat-select" onchange="assignStat('ap')"></select></p>
+                        </div>
                     </div>
-                    <div class="stat-group" style="flex-basis: 100%;">
-                        <p>Luck: <span id="luck">-</span> <select id="luck-select" class="stat-select" onchange="assignStat('luck')"></select></p>
+                    <div class="stat-row">
+                        <div class="stat-group" style="flex-basis: 100%;">
+                            <p>Luck: <span id="luck">-</span> <select id="luck-select" class="stat-select" onchange="assignStat('luck')"></select></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -315,13 +330,13 @@
 
             // Assign each roll a unique identifier (A, B, C, D, E)
             const identifiers = ["A", "B", "C", "D", "E"];
-            originalRolls = rolls.map((roll, index) => ({
+            rollAssignments = rolls.map((roll, index) => ({
                 id: identifiers[index],
                 value: roll
             }));
 
             // Display individual rolls
-            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${originalRolls.map(r => r.value).join(', ')}`;
+            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${rollAssignments.map(r => r.value).join(', ')}`;
 
             // Reset assigned rolls
             assignedRolls = {
@@ -355,7 +370,7 @@
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
                 const currentId = assignedRolls[stat];
-                const currentValue = currentId ? originalRolls.find(r => r.id === currentId).value : 0;
+                const currentValue = currentId ? rollAssignments.find(r => r.id === currentId).value : 0;
                 select.innerHTML = ''; // Clear existing options
                 const optDefault = document.createElement('option');
                 optDefault.value = '';
@@ -365,7 +380,7 @@
                 select.appendChild(optDefault);
 
                 // Add each roll to the dropdown if not assigned to another stat
-                originalRolls.forEach(roll => {
+                rollAssignments.forEach(roll => {
                     if (!assignedIds.includes(roll.id) || roll.id === currentId) {
                         const opt = document.createElement('option');
                         opt.value = roll.id;
@@ -389,7 +404,7 @@
 
                 // Assign the new value (or null if 'Select' chosen)
                 assignedRolls[stat] = selectedId === '' ? null : selectedId;
-                character[stat] = selectedId === '' ? 0 : originalRolls.find(r => r.id === selectedId).value;
+                character[stat] = selectedId === '' ? 0 : rollAssignments.find(r => r.id === selectedId).value;
                 document.getElementById(stat).textContent = character[stat] || '-';
 
                 // Update dropdowns

@@ -29,9 +29,13 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
+            position: relative; /* To contain absolutely positioned descriptions */
         }
         .description-item {
+            position: absolute;
+            width: 300px;
             margin-bottom: 10px;
+            display: none; /* Hidden until selected */
         }
         label {
             display: block;
@@ -199,27 +203,20 @@
         };
 
         function updateDescription(type) {
-            // Clear all descriptions to avoid duplicates from previous selections
-            document.getElementById('pathDescription').innerHTML = '';
-            document.getElementById('keybladeDescription').innerHTML = '';
-            document.getElementById('equipmentDescription').innerHTML = '';
-
-            // Update only the selected description
             const value = document.getElementById(type).value;
             const descriptionItem = document.getElementById(`${type}Description`);
 
             if (value && descriptions[type][value]) {
+                descriptionItem.style.display = 'block';
                 descriptionItem.innerHTML = descriptions[type][value];
-            }
 
-            // Show all description items that have content
-            document.querySelectorAll('.description-item').forEach(item => {
-                if (item.innerHTML) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+                // Align with the corresponding dropdown
+                const dropdown = document.getElementById(type);
+                const rect = dropdown.getBoundingClientRect();
+                descriptionItem.style.top = `${rect.top + window.scrollY - 70}px`; // Adjust for header offset
+            } else {
+                descriptionItem.style.display = 'none';
+            }
 
             // Show/hide Spell 2 for Spellblade
             if (type === "path" && value === "Spellblade") {

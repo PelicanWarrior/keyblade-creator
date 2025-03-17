@@ -9,21 +9,40 @@
             font-family: Arial, sans-serif;
             background: linear-gradient(to bottom, #1a1a2e, #16213e);
             color: white;
-            text-align: center;
             padding: 20px;
+            margin: 0;
         }
         .container {
-            max-width: 600px;
+            max-width: 900px;
             margin: 0 auto;
+            display: flex;
+            gap: 20px;
+        }
+        .left-column {
+            flex: 1;
             background: rgba(0, 0, 0, 0.5);
             padding: 20px;
             border-radius: 10px;
         }
+        .right-column {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            display: none; /* Hidden until a dropdown is selected */
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
         select, input, button {
+            width: 100%;
             padding: 10px;
-            margin: 5px;
+            margin: 5px 0;
             font-size: 16px;
             border-radius: 5px;
+            box-sizing: border-box;
         }
         button {
             background-color: #4CAF50;
@@ -34,88 +53,102 @@
         button:hover {
             background-color: #45a049;
         }
+        #stats {
+            margin: 10px 0;
+        }
         #output {
             margin-top: 20px;
             padding: 10px;
             background: #2a2a4a;
             border-radius: 5px;
         }
+        h1 {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <h1>Keyblade Chronicles Character Creator</h1>
     <div class="container">
-        <h1>Keyblade Chronicles Character Creator</h1>
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="name" placeholder="Enter your character's name">
-        </div>
-        <div>
-            <label for="path">Path:</label>
-            <select id="path">
-                <option value="" disabled selected>Select a Path</option>
-                <option value="Light Bearer">Light Bearer</option>
-                <option value="Shadow Striker">Shadow Striker</option>
-                <option value="Spellblade">Spellblade</option>
-                <option value="Stalwart Blade">Stalwart Blade</option>
-                <option value="Swift Blade">Swift Blade</option>
-                <option value="Time Blade">Time Blade</option>
-            </select>
-        </div>
-        <div>
-            <button onclick="rollStats()">Roll Stats</button>
-            <p>HP: <span id="hp">-</span></p>
-            <p>MP: <span id="mp">-</span> | Str: <span id="str">-</span> | Def: <span id="def">-</span> | AP: <span id="ap">-</span> | Luck: <span id="luck">-</span></p>
-        </div>
-        <div>
-            <label for="keyblade">Keyblade:</label>
-            <select id="keyblade">
-                <option value="" disabled selected>Select a Keyblade</option>
-                <option value="Kingdom Key">Kingdom Key</option>
-                <option value="Way to Dawn">Way to Dawn</option>
-                <option value="Star Seeker">Star Seeker</option>
-                <option value="Earthshaker">Earthshaker</option>
-                <option value="Oathkeeper">Oathkeeper</option>
-                <option value="Rainfell">Rainfell</option>
-            </select>
-        </div>
-        <div>
-            <label for="equipment">Equipment:</label>
-            <select id="equipment">
-                <option value="" disabled selected>Select an Accessory</option>
-                <option value="Light Charm">Light Charm</option>
-                <option value="Shadow Veil">Shadow Veil</option>
-                <option value="Ether Crystal">Ether Crystal</option>
-                <option value="Defender’s Crest">Defender’s Crest</option>
-                <option value="Trick Coin">Trick Coin</option>
-                <option value="Hourglass Pendant">Hourglass Pendant</option>
-            </select>
-        </div>
-        <div>
-            <label for="spell1">Spell 1:</label>
-            <select id="spell1">
-                <option value="" disabled selected>Select a Spell</option>
-                <option value="Fire">Fire</option>
-                <option value="Blizzard">Blizzard</option>
-                <option value="Thunder">Thunder</option>
-                <option value="Cure">Cure</option>
-            </select>
-            <div id="spell2Container" style="display: none;">
-                <label for="spell2">Spell 2 (Spellblade only):</label>
-                <select id="spell2">
+        <div class="left-column">
+            <div>
+                <label for="name">Name:</label>
+                <input type="text" id="name" placeholder="Enter your character's name">
+            </div>
+            <div>
+                <label for="path">Path:</label>
+                <select id="path" onchange="updateDescription('path')">
+                    <option value="" disabled selected>Select a Path</option>
+                    <option value="Light Bearer">Light Bearer</option>
+                    <option value="Shadow Striker">Shadow Striker</option>
+                    <option value="Spellblade">Spellblade</option>
+                    <option value="Stalwart Blade">Stalwart Blade</option>
+                    <option value="Swift Blade">Swift Blade</option>
+                    <option value="Time Blade">Time Blade</option>
+                </select>
+            </div>
+            <div>
+                <button onclick="rollStats()">Roll Stats</button>
+                <div id="stats">
+                    <p>HP: <span id="hp">-</span></p>
+                    <p>MP: <span id="mp">-</span> | Str: <span id="str">-</span> | Def: <span id="def">-</span> | AP: <span id="ap">-</span> | Luck: <span id="luck">-</span></p>
+                </div>
+            </div>
+            <div>
+                <label for="keyblade">Keyblade:</label>
+                <select id="keyblade" onchange="updateDescription('keyblade')">
+                    <option value="" disabled selected>Select a Keyblade</option>
+                    <option value="Kingdom Key">Kingdom Key</option>
+                    <option value="Way to Dawn">Way to Dawn</option>
+                    <option value="Star Seeker">Star Seeker</option>
+                    <option value="Earthshaker">Earthshaker</option>
+                    <option value="Oathkeeper">Oathkeeper</option>
+                    <option value="Rainfell">Rainfell</option>
+                </select>
+            </div>
+            <div>
+                <label for="equipment">Equipment:</label>
+                <select id="equipment" onchange="updateDescription('equipment')">
+                    <option value="" disabled selected>Select an Accessory</option>
+                    <option value="Light Charm">Light Charm</option>
+                    <option value="Shadow Veil">Shadow Veil</option>
+                    <option value="Ether Crystal">Ether Crystal</option>
+                    <option value="Defender’s Crest">Defender’s Crest</option>
+                    <option value="Trick Coin">Trick Coin</option>
+                    <option value="Hourglass Pendant">Hourglass Pendant</option>
+                </select>
+            </div>
+            <div>
+                <label for="spell1">Spell 1:</label>
+                <select id="spell1">
                     <option value="" disabled selected>Select a Spell</option>
                     <option value="Fire">Fire</option>
                     <option value="Blizzard">Blizzard</option>
                     <option value="Thunder">Thunder</option>
                     <option value="Cure">Cure</option>
                 </select>
+                <div id="spell2Container" style="display: none;">
+                    <label for="spell2">Spell 2 (Spellblade only):</label>
+                    <select id="spell2">
+                        <option value="" disabled selected>Select a Spell</option>
+                        <option value="Fire">Fire</option>
+                        <option value="Blizzard">Blizzard</option>
+                        <option value="Thunder">Thunder</option>
+                        <option value="Cure">Cure</option>
+                    </select>
+                </div>
             </div>
+            <div>
+                <label for="backstory">Backstory:</label>
+                <input type="text" id="backstory" placeholder="A short backstory">
+            </div>
+            <button onclick="createCharacter()">Create Character</button>
+            <div id="output"></div>
         </div>
-        <div>
-            <label for="backstory">Backstory:</label>
-            <input type="text" id="backstory" placeholder="A short backstory">
+        <div class="right-column" id="descriptionBox">
+            <h2>Description</h2>
+            <p id="descriptionText">Select a Path, Keyblade, or Equipment to see its description.</p>
         </div>
-        <button onclick="createCharacter()">Create Character</button>
-        <div id="output"></div>
     </div>
 
     <script>
@@ -134,20 +167,65 @@
             backstory: ""
         };
 
+        const descriptions = {
+            path: {
+                "Light Bearer": "A champion of hope and friendship, like Sora. Light Bearers wield their Keyblades with balance and heart, blending combat and support.",
+                "Shadow Striker": "A warrior embracing the edge of darkness, like Riku. Shadow Strikers wield their Keyblade with raw power, risking themselves for devastating strikes.",
+                "Spellblade": "A magical Keyblade master, like Donald or Mickey. Spellblades fuse spells and strikes, wielding their Keyblade as a conduit for arcane might.",
+                "Stalwart Blade": "A protector of allies, like Goofy or Terra. Stalwart Blades wield their Keyblade to shield and endure, standing as a bulwark against harm.",
+                "Swift Blade": "A nimble and cunning wielder, like Roxas or Ventus. Swift Blades dance through combat, striking fast and trusting luck to prevail.",
+                "Time Blade": "A temporal Keyblade master, like Aqua. Time Blades wield their Keyblade with precision, blending magic and control to bend battle’s flow."
+            },
+            keyblade: {
+                "Kingdom Key": "A simple, iconic blade of light and balance, wielded by Sora.",
+                "Way to Dawn": "A shadowed Keyblade of dusk and redemption, favored by Riku.",
+                "Star Seeker": "A star-tipped blade pulsing with magical potential, tied to Mickey’s lineage.",
+                "Earthshaker": "A rugged, heavy Keyblade of unyielding strength, once Terra’s.",
+                "Oathkeeper": "A sleek, swift blade of promise and memory, linked to Roxas and Sora.",
+                "Rainfell": "A graceful, flowing Keyblade of time and elegance, Aqua’s chosen weapon."
+            },
+            equipment: {
+                "Light Charm": "Reroll one failed Luck check per session. A token of hope for Light Bearers.",
+                "Shadow Veil": "The first attack against you in combat has a -1 penalty to hit. A dark shroud for Shadow Strikers.",
+                "Ether Crystal": "Restore 2 MP once per session. A mystic gem for Spellblades.",
+                "Defender’s Crest": "Add 1 to your Defense when protecting an ally. A sturdy emblem for Stalwart Blades.",
+                "Trick Coin": "Flip it once per session: heads doubles your Luck for one roll, tails halves it. A gambler’s tool for Swift Blades.",
+                "Hourglass Pendant": "Regain 1 MP when you use a spell or ability, once per session. A timely relic for Time Blades."
+            }
+        };
+
+        function updateDescription(type) {
+            const value = document.getElementById(type).value;
+            const descriptionBox = document.getElementById('descriptionBox');
+            const descriptionText = document.getElementById('descriptionText');
+
+            if (value && descriptions[type][value]) {
+                descriptionBox.style.display = 'block';
+                descriptionText.innerHTML = descriptions[type][value];
+            } else {
+                descriptionBox.style.display = 'none';
+                descriptionText.innerHTML = "Select a Path, Keyblade, or Equipment to see its description.";
+            }
+
+            // Show/hide Spell 2 for Spellblade
+            if (type === "path" && value === "Spellblade") {
+                document.getElementById('spell2Container').style.display = 'block';
+            } else {
+                document.getElementById('spell2Container').style.display = 'none';
+            }
+        }
+
         function rollStats() {
-            // Roll 4d6, drop lowest for HP
             let hpRolls = Array(4).fill().map(() => Math.floor(Math.random() * 6) + 1);
             hpRolls.sort((a, b) => a - b).shift(); // Drop lowest
             character.hp = hpRolls.reduce((sum, val) => sum + val, 0);
 
-            // Roll 1d6 for other stats
             character.mp = Math.floor(Math.random() * 6) + 1;
             character.str = Math.floor(Math.random() * 6) + 1;
             character.def = Math.floor(Math.random() * 6) + 1;
             character.ap = Math.floor(Math.random() * 6) + 1;
             character.luck = Math.floor(Math.random() * 6) + 1;
 
-            // Display stats
             document.getElementById('hp').textContent = character.hp;
             document.getElementById('mp').textContent = character.mp;
             document.getElementById('str').textContent = character.str;
@@ -162,20 +240,15 @@
             character.keyblade = document.getElementById('keyblade').value;
             character.equipment = document.getElementById('equipment').value;
 
-            // Handle spells (Spellblade gets 2, others get 1)
             let spell1 = document.getElementById('spell1').value;
             character.spells = [spell1];
             if (character.path === "Spellblade") {
-                document.getElementById('spell2Container').style.display = 'block';
                 let spell2 = document.getElementById('spell2').value;
                 if (spell2 && spell2 !== spell1) character.spells.push(spell2);
-            } else {
-                document.getElementById('spell2Container').style.display = 'none';
             }
 
             character.backstory = document.getElementById('backstory').value || "A mysterious hero.";
 
-            // Output character
             let output = `
                 Name: ${character.name}<br>
                 Path: ${character.path}<br>

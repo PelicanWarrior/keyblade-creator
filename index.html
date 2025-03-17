@@ -127,7 +127,7 @@
             </div>
             <div>
                 <label for="spell1">Spell 1:</label>
-                <select id="spell1">
+                <select id="spell1" onchange="updateSpellOptions('spell1')">
                     <option value="" disabled selected>Select a Spell</option>
                     <option value="Fire">Fire</option>
                     <option value="Blizzard">Blizzard</option>
@@ -136,7 +136,7 @@
                 </select>
                 <div id="spell2Container" style="display: none;">
                     <label for="spell2">Spell 2 (Spellblade only):</label>
-                    <select id="spell2">
+                    <select id="spell2" onchange="updateSpellOptions('spell2')">
                         <option value="" disabled selected>Select a Spell</option>
                         <option value="Fire">Fire</option>
                         <option value="Blizzard">Blizzard</option>
@@ -222,8 +222,48 @@
             // Show/hide Spell 2 for Spellblade
             if (type === "path" && value === "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'block';
+                updateSpellOptions('spell1'); // Update spell options when Spellblade is selected
             } else if (type === "path" && value !== "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'none';
+                character.spells = [document.getElementById('spell1').value]; // Reset to one spell
+                updateSpellOptions('spell1'); // Reset spell options
+            }
+        }
+
+        function updateSpellOptions(changedSpell) {
+            const spell1 = document.getElementById('spell1');
+            const spell2 = document.getElementById('spell2');
+            const spellOptions = ["", "Fire", "Blizzard", "Thunder", "Cure"];
+
+            const spell1Value = spell1.value;
+            const spell2Value = spell2.value;
+
+            if (changedSpell === 'spell1') {
+                // Update Spell 2 dropdown based on Spell 1 selection
+                const currentSpell2 = spell2.value;
+                spell2.innerHTML = ''; // Clear Spell 2 options
+                spellOptions.forEach(option => {
+                    if (option === spell1Value) return; // Skip the spell chosen in Spell 1
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.text = option || "Select a Spell";
+                    if (option === "") opt.disabled = true;
+                    if (option === currentSpell2) opt.selected = true;
+                    spell2.appendChild(opt);
+                });
+            } else if (changedSpell === 'spell2') {
+                // Update Spell 1 dropdown based on Spell 2 selection
+                const currentSpell1 = spell1.value;
+                spell1.innerHTML = ''; // Clear Spell 1 options
+                spellOptions.forEach(option => {
+                    if (option === spell2Value) return; // Skip the spell chosen in Spell 2
+                    const opt = document.createElement('option');
+                    opt.value = option;
+                    opt.text = option || "Select a Spell";
+                    if (option === "") opt.disabled = true;
+                    if (option === currentSpell1) opt.selected = true;
+                    spell1.appendChild(opt);
+                });
             }
         }
 

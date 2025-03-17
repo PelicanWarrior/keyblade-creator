@@ -29,7 +29,7 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
-            position: relative; /* Container for absolute positioning */
+            position: relative; /* To contain absolutely positioned descriptions */
             min-height: 500px; /* Ensure enough height for all descriptions */
         }
         .description-item {
@@ -52,6 +52,11 @@
             border-radius: 5px;
             box-sizing: border-content;
         }
+        .stat-select {
+            width: 60px; /* Small dropdown for 2-digit numbers */
+            display: inline-block;
+            margin-left: 10px;
+        }
         button {
             background-color: #4CAF50;
             color: white;
@@ -64,6 +69,10 @@
         }
         #stats {
             margin: 10px 0;
+        }
+        #dice-rolls {
+            margin: 5px 0;
+            font-style: italic;
         }
         #output {
             margin-top: 20px;
@@ -98,9 +107,14 @@
             </div>
             <div>
                 <button onclick="rollStats()">Roll Stats</button>
+                <div id="dice-rolls"></div>
                 <div id="stats">
                     <p>HP: <span id="hp">-</span></p>
-                    <p>MP: <span id="mp">-</span> | Str: <span id="str">-</span> | Def: <span id="def">-</span> | AP: <span id="ap">-</span> | Luck: <span id="luck">-</span></p>
+                    <p>MP: <span id="mp">-</span> <select id="mp-select" class="stat-select" onchange="assignStat('mp')"></select></p>
+                    <p>Str: <span id="str">-</span> <select id="str-select" class="stat-select" onchange="assignStat('str')"></select></p>
+                    <p>Def: <span id="def">-</span> <select id="def-select" class="stat-select" onchange="assignStat('def')"></select></p>
+                    <p>AP: <span id="ap">-</span> <select id="ap-select" class="stat-select" onchange="assignStat('ap')"></select></p>
+                    <p>Luck: <span id="luck">-</span> <select id="luck-select" class="stat-select" onchange="assignStat('luck')"></select></p>
                 </div>
             </div>
             <div>
@@ -176,6 +190,7 @@
             spells: [],
             backstory: ""
         };
+        let availableRolls = [];
 
         const descriptions = {
             path: {
@@ -272,22 +287,54 @@
         }
 
         function rollStats() {
-            let hpRolls = Array(4).fill().map(() => Math.floor(Math.random() * 6) + 1);
+            let rolls = Array(5).fill().map(() => Math.floor(Math.random() * 6) + 1); // Roll 5d6 for stats
+            let hpRolls = rolls.slice(0, 4); // Use first 4 for HP
             hpRolls.sort((a, b) => a - b).shift(); // Drop lowest
             character.hp = hpRolls.reduce((sum, val) => sum + val, 0);
 
-            character.mp = Math.floor(Math.random() * 6) + 1;
-            character.str = Math.floor(Math.random() * 6) + 1;
-            character.def = Math.floor(Math.random() * 6) + 1;
-            character.ap = Math.floor(Math.random() * 6) + 1;
-            character.luck = Math.floor(Math.random() * 6) + 1;
+            // Display individual rolls
+            let remainingRolls = rolls.slice(4); // Last roll for initial available pool
+            availableRolls = [...remainingRolls, ...Array(4).fill().map(() => Math.floor(Math.random() * 6) + 1)]; // Add 4 more rolls
+            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${availableRolls.join(', ')}`;
 
+            // Set HP automatically
             document.getElementById('hp').textContent = character.hp;
-            document.getElementById('mp').textContent = character.mp;
-            document.getElementById('str').textContent = character.str;
-            document.getElementById('def').textContent = character.def;
-            document.getElementById('ap').textContent = character.ap;
-            document.getElementById('luck').textContent = character.luck;
+
+            // Populate dropdowns with available rolls
+            updateStatDropdowns();
+        }
+
+        function updateStatDropdowns() {
+            const stats = ['mp', 'str', 'def', 'ap', 'luck'];
+            stats.forEach(stat => {
+                const select = document.getElementById(`${stat}-select`);
+                select.innerHTML = ''; // Clear existing options
+                const optDefault = document.createElement('option');
+                optDefault.value = '';
+                optDefault.text = 'Select';
+                optDefault.disabled = true;
+                optDefault.selected = true;
+                select.appendChild(optDefault);
+                availableRolls.forEach(roll => {
+                    if (!character[stat] || character[stat] === 0) { // Only show unassigned rolls
+                        const opt = document.createElement('option');
+                        opt.value = roll;
+                        opt.text = roll;
+                        select.appendChild(opt);
+                    }
+                });
+            });
+        }
+
+        function assignStat(stat) {
+            const select = document.getElementById(`${stat}-select`);
+            const value = parseInt(select.value);
+            if (value) {
+                character[stat] = value;
+                document.getElementById(stat).textContent = value;
+                availableRolls = availableRolls.filter(roll => roll !== value); // Remove assigned roll
+                updateStatDropdowns(); // Update other dropdowns
+            }
         }
 
         function createCharacter() {

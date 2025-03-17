@@ -334,6 +334,12 @@
 
         function updateStatDropdowns() {
             const stats = ['mp', 'str', 'def', 'ap', 'luck'];
+            // Calculate currently assigned rolls
+            let assignedValues = stats
+                .filter(s => s !== statBeingUpdated) // Exclude the stat being updated
+                .map(s => character[s])
+                .filter(val => val !== 0); // Exclude unassigned (0) values
+
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
                 const currentValue = character[stat] || 0;
@@ -347,14 +353,8 @@
 
                 // Show all original rolls except those assigned to other stats
                 originalRolls.forEach(roll => {
-                    // Check if the roll is assigned to another stat
-                    let isAssignedToAnother = false;
-                    for (let otherStat of stats) {
-                        if (otherStat !== stat && character[otherStat] === roll) {
-                            isAssignedToAnother = true;
-                            break;
-                        }
-                    }
+                    // Check if the roll is assigned to another stat (excluding the current stat)
+                    let isAssignedToAnother = assignedValues.includes(roll) && roll !== currentValue;
                     if (!isAssignedToAnother) {
                         const opt = document.createElement('option');
                         opt.value = roll;
@@ -366,7 +366,10 @@
             });
         }
 
+        let statBeingUpdated = null; // Track which stat is being updated
+
         function assignStat(stat) {
+            statBeingUpdated = stat; // Set the stat being updated
             const select = document.getElementById(`${stat}-select`);
             const value = parseInt(select.value);
             if (value) {
@@ -389,6 +392,7 @@
                 // Update dropdowns
                 updateStatDropdowns();
             }
+            statBeingUpdated = null; // Reset after update
         }
 
         function createCharacter() {

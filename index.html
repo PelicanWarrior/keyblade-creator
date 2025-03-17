@@ -29,12 +29,9 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
-            display: flex;
-            flex-direction: column;
         }
         .description-item {
             margin-bottom: 10px;
-            display: none; /* Hidden until selected */
         }
         label {
             display: block;
@@ -202,25 +199,27 @@
         };
 
         function updateDescription(type) {
-            // Hide all description items initially
-            document.getElementById('pathDescription').style.display = 'none';
-            document.getElementById('keybladeDescription').style.display = 'none';
-            document.getElementById('equipmentDescription').style.display = 'none';
+            // Clear all descriptions to avoid duplicates from previous selections
+            document.getElementById('pathDescription').innerHTML = '';
+            document.getElementById('keybladeDescription').innerHTML = '';
+            document.getElementById('equipmentDescription').innerHTML = '';
 
+            // Update only the selected description
             const value = document.getElementById(type).value;
             const descriptionItem = document.getElementById(`${type}Description`);
 
             if (value && descriptions[type][value]) {
-                descriptionItem.style.display = 'block';
                 descriptionItem.innerHTML = descriptions[type][value];
-                // Align with the corresponding dropdown
-                const dropdown = document.getElementById(type);
-                const rect = dropdown.getBoundingClientRect();
-                descriptionItem.style.position = 'absolute';
-                descriptionItem.style.top = `${rect.top + window.scrollY}px`;
-                descriptionItem.style.left = `${rect.right + 20}px`; // 20px gap
-                descriptionItem.style.width = '300px'; // Fixed width for consistency
             }
+
+            // Show all description items that have content
+            document.querySelectorAll('.description-item').forEach(item => {
+                if (item.innerHTML) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
 
             // Show/hide Spell 2 for Spellblade
             if (type === "path" && value === "Spellblade") {

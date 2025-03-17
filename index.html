@@ -191,6 +191,14 @@
             backstory: ""
         };
         let availableRolls = [];
+        let originalRolls = [];
+        let assignedRolls = {
+            mp: 0,
+            str: 0,
+            def: 0,
+            ap: 0,
+            luck: 0
+        };
 
         const descriptions = {
             path: {
@@ -295,10 +303,30 @@
             // Display individual rolls
             let remainingRolls = rolls.slice(4); // Last roll for initial available pool
             availableRolls = [...remainingRolls, ...Array(4).fill().map(() => Math.floor(Math.random() * 6) + 1)]; // Add 4 more rolls
+            originalRolls = [...availableRolls]; // Store original rolls for dropdowns
             document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${availableRolls.join(', ')}`;
 
             // Set HP automatically
             document.getElementById('hp').textContent = character.hp;
+
+            // Reset assigned rolls
+            assignedRolls = {
+                mp: 0,
+                str: 0,
+                def: 0,
+                ap: 0,
+                luck: 0
+            };
+            character.mp = 0;
+            character.str = 0;
+            character.def = 0;
+            character.ap = 0;
+            character.luck = 0;
+            document.getElementById('mp').textContent = '-';
+            document.getElementById('str').textContent = '-';
+            document.getElementById('def').textContent = '-';
+            document.getElementById('ap').textContent = '-';
+            document.getElementById('luck').textContent = '-';
 
             // Populate dropdowns with available rolls
             updateStatDropdowns();
@@ -308,18 +336,30 @@
             const stats = ['mp', 'str', 'def', 'ap', 'luck'];
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
+                const currentValue = character[stat] || 0;
                 select.innerHTML = ''; // Clear existing options
                 const optDefault = document.createElement('option');
                 optDefault.value = '';
                 optDefault.text = 'Select';
                 optDefault.disabled = true;
-                optDefault.selected = true;
+                if (!currentValue) optDefault.selected = true;
                 select.appendChild(optDefault);
-                availableRolls.forEach(roll => {
-                    if (!character[stat] || character[stat] === 0) { // Only show unassigned rolls
+
+                // Show all original rolls except those assigned to other stats
+                originalRolls.forEach(roll => {
+                    // Check if the roll is assigned to another stat
+                    let isAssignedToAnother = false;
+                    for (let otherStat of stats) {
+                        if (otherStat !== stat && character[otherStat] === roll) {
+                            isAssignedToAnother = true;
+                            break;
+                        }
+                    }
+                    if (!isAssignedToAnother) {
                         const opt = document.createElement('option');
                         opt.value = roll;
                         opt.text = roll;
+                        if (roll === currentValue) opt.selected = true;
                         select.appendChild(opt);
                     }
                 });
@@ -330,13 +370,24 @@
             const select = document.getElementById(`${stat}-select`);
             const value = parseInt(select.value);
             if (value) {
+                // If there was a previously assigned value, return it to the pool
+                const previousValue = character[stat];
+                if (previousValue && previousValue !== 0) {
+                    availableRolls.push(previousValue);
+                }
+
+                // Assign the new value
                 character[stat] = value;
                 document.getElementById(stat).textContent = value;
-                const index = availableRolls.indexOf(value); // Find the first occurrence
+
+                // Remove the newly assigned value from the pool
+                const index = availableRolls.indexOf(value);
                 if (index !== -1) {
                     availableRolls.splice(index, 1); // Remove only the first instance
                 }
-                updateStatDropdowns(); // Update other dropdowns
+
+                // Update dropdowns
+                updateStatDropdowns();
             }
         }
 

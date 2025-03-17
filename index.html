@@ -20,16 +20,21 @@
         }
         .left-column {
             flex: 1;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
         }
         .right-column {
             flex: 1;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
-            display: none; /* Hidden until a dropdown is selected */
+            display: flex;
+            flex-direction: column;
+        }
+        .description-item {
+            margin-bottom: 10px;
+            display: none; /* Hidden until selected */
         }
         label {
             display: block;
@@ -42,13 +47,14 @@
             margin: 5px 0;
             font-size: 16px;
             border-radius: 5px;
-            box-sizing: border-box;
+            box-sizing: border-content;
         }
         button {
             background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
+            margin-top: 10px;
         }
         button:hover {
             background-color: #45a049;
@@ -145,9 +151,10 @@
             <button onclick="createCharacter()">Create Character</button>
             <div id="output"></div>
         </div>
-        <div class="right-column" id="descriptionBox">
-            <h2>Description</h2>
-            <p id="descriptionText">Select a Path, Keyblade, or Equipment to see its description.</p>
+        <div class="right-column">
+            <div id="pathDescription" class="description-item"></div>
+            <div id="keybladeDescription" class="description-item"></div>
+            <div id="equipmentDescription" class="description-item"></div>
         </div>
     </div>
 
@@ -195,16 +202,24 @@
         };
 
         function updateDescription(type) {
+            // Hide all description items initially
+            document.getElementById('pathDescription').style.display = 'none';
+            document.getElementById('keybladeDescription').style.display = 'none';
+            document.getElementById('equipmentDescription').style.display = 'none';
+
             const value = document.getElementById(type).value;
-            const descriptionBox = document.getElementById('descriptionBox');
-            const descriptionText = document.getElementById('descriptionText');
+            const descriptionItem = document.getElementById(`${type}Description`);
 
             if (value && descriptions[type][value]) {
-                descriptionBox.style.display = 'block';
-                descriptionText.innerHTML = descriptions[type][value];
-            } else {
-                descriptionBox.style.display = 'none';
-                descriptionText.innerHTML = "Select a Path, Keyblade, or Equipment to see its description.";
+                descriptionItem.style.display = 'block';
+                descriptionItem.innerHTML = descriptions[type][value];
+                // Align with the corresponding dropdown
+                const dropdown = document.getElementById(type);
+                const rect = dropdown.getBoundingClientRect();
+                descriptionItem.style.position = 'absolute';
+                descriptionItem.style.top = `${rect.top + window.scrollY}px`;
+                descriptionItem.style.left = `${rect.right + 20}px`; // 20px gap
+                descriptionItem.style.width = '300px'; // Fixed width for consistency
             }
 
             // Show/hide Spell 2 for Spellblade

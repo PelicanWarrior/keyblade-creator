@@ -213,7 +213,8 @@
                 // Align with the corresponding dropdown
                 const dropdown = document.getElementById(type);
                 const rect = dropdown.getBoundingClientRect();
-                descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`; // Adjusted offset to move up by one line (~20px)
+                descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`; // Adjusted offset to move up by one line
+                descriptionItem.style.left = `${rect.right + 20}px`; // 20px gap to the right
             } else {
                 descriptionItem.style.display = 'none';
             }
@@ -221,7 +222,7 @@
             // Show/hide Spell 2 for Spellblade
             if (type === "path" && value === "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'block';
-            } else {
+            } else if (type === "path" && value !== "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'none';
             }
         }

@@ -335,10 +335,7 @@
         function updateStatDropdowns() {
             const stats = ['mp', 'str', 'def', 'ap', 'luck'];
             // Calculate currently assigned rolls
-            let assignedValues = stats
-                .filter(s => s !== statBeingUpdated) // Exclude the stat being updated
-                .map(s => character[s])
-                .filter(val => val !== 0); // Exclude unassigned (0) values
+            let assignedValues = stats.map(s => character[s]).filter(val => val !== 0); // All assigned values
 
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
@@ -347,15 +344,13 @@
                 const optDefault = document.createElement('option');
                 optDefault.value = '';
                 optDefault.text = 'Select';
-                optDefault.disabled = true;
+                optDefault.disabled = false; // Not removed
                 if (!currentValue) optDefault.selected = true;
                 select.appendChild(optDefault);
 
-                // Show all original rolls except those assigned to other stats
+                // Show all original rolls except those assigned to any stat
                 originalRolls.forEach(roll => {
-                    // Check if the roll is assigned to another stat (excluding the current stat)
-                    let isAssignedToAnother = assignedValues.includes(roll) && roll !== currentValue;
-                    if (!isAssignedToAnother) {
+                    if (!assignedValues.includes(roll) || roll === currentValue) {
                         const opt = document.createElement('option');
                         opt.value = roll;
                         opt.text = roll;
@@ -366,33 +361,35 @@
             });
         }
 
-        let statBeingUpdated = null; // Track which stat is being updated
-
         function assignStat(stat) {
-            statBeingUpdated = stat; // Set the stat being updated
             const select = document.getElementById(`${stat}-select`);
             const value = parseInt(select.value);
-            if (value) {
+            if (value || value === 0) { // Allow null selection
                 // If there was a previously assigned value, return it to the pool
                 const previousValue = character[stat];
                 if (previousValue && previousValue !== 0) {
-                    availableRolls.push(previousValue);
+                    // Only return to pool if not already assigned elsewhere
+                    let isAssignedElsewhere = Object.values(assignedRolls).filter(v => v !== 0 && v !== previousValue).includes(previousValue);
+                    if (!isAssignedElsewhere) {
+                        availableRolls.push(previousValue);
+                    }
                 }
 
-                // Assign the new value
+                // Assign the new value (or null if 'Select' chosen)
                 character[stat] = value;
-                document.getElementById(stat).textContent = value;
+                document.getElementById(stat).textContent = value || '-';
 
-                // Remove the newly assigned value from the pool
-                const index = availableRolls.indexOf(value);
-                if (index !== -1) {
-                    availableRolls.splice(index, 1); // Remove only the first instance
+                // Remove the newly assigned value from the pool if not null
+                if (value !== 0) {
+                    const index = availableRolls.indexOf(value);
+                    if (index !== -1) {
+                        availableRolls.splice(index, 1); // Remove only the first instance
+                    }
                 }
 
                 // Update dropdowns
                 updateStatDropdowns();
             }
-            statBeingUpdated = null; // Reset after update
         }
 
         function createCharacter() {

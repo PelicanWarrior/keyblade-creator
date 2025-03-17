@@ -84,6 +84,9 @@
             flex-direction: column;
             gap: 5px;
         }
+        #abilities {
+            margin: 10px 0;
+        }
         #dice-rolls {
             margin: 5px 0;
             font-style: italic;
@@ -137,6 +140,25 @@
                             <p>AP: <span id="ap">-</span> <select id="ap-select" class="stat-select" onchange="assignStat('ap')"></select></p>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div id="abilities" style="display: none;">
+                <label>Abilities</label>
+                <p>AP Left: <span id="ap-left">5</span></p>
+                <div id="ability-1">
+                    <select id="ability-select-1" onchange="assignAbility(1)">
+                        <option value="" selected>Select an Ability</option>
+                    </select>
+                </div>
+                <div id="ability-2" style="display: none;">
+                    <select id="ability-select-2" onchange="assignAbility(2)">
+                        <option value="" selected>Select an Ability</option>
+                    </select>
+                </div>
+                <div id="ability-3" style="display: none;">
+                    <select id="ability-select-3" onchange="assignAbility(3)">
+                        <option value="" selected>Select an Ability</option>
+                    </select>
                 </div>
             </div>
             <div>
@@ -194,6 +216,9 @@
             <div id="pathDescription" class="description-item"></div>
             <div id="keybladeDescription" class="description-item"></div>
             <div id="equipmentDescription" class="description-item"></div>
+            <div id="abilityDescription-1" class="description-item"></div>
+            <div id="abilityDescription-2" class="description-item"></div>
+            <div id="abilityDescription-3" class="description-item"></div>
         </div>
     </div>
 
@@ -210,7 +235,8 @@
             keyblade: "",
             equipment: "",
             spells: [],
-            backstory: ""
+            backstory: "",
+            abilities: []
         };
         let originalRolls = [];
         let rollAssignments = []; // Store roll assignments with identifiers (e.g., [{id: "A", value: 6}, {id: "B", value: 2}, ...])
@@ -220,6 +246,15 @@
             def: null,
             ap: null,
             luck: null
+        };
+        let totalAP = 5; // Initial AP value
+        let remainingAP = totalAP;
+        let selectedAbilities = [];
+
+        const abilityData = {
+            "Star Seeker": { apCost: 1, description: "A star-tipped blade pulsing with magical potential, tied to Mickey's lineage." },
+            "Restore MP": { apCost: 2, description: "Restore 2 MP once per session. A mystic gem for Spellblades." },
+            "Shield Boost": { apCost: 3, description: "Increase defense by 1 for one encounter. A protective ward for Stalwart Blades." }
         };
 
         const descriptions = {
@@ -256,14 +291,10 @@
             if (value && descriptions[type][value]) {
                 descriptionItem.style.display = 'block';
                 descriptionItem.innerHTML = descriptions[type][value];
-
-                // Align with the corresponding dropdown, inside the right column
-                const dropdown = document.getElementById(type);
-                const rect = dropdown.getBoundingClientRect();
+                const rect = document.getElementById(type).getBoundingClientRect();
                 const rightColumn = document.querySelector('.right-column');
-                const rightRect = rightColumn.getBoundingClientRect();
-                descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`; // Adjusted offset to move up by one line
-                descriptionItem.style.left = `${0}px`; // Align to the left edge of the right column
+                descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`;
+                descriptionItem.style.left = `${0}px`;
             } else {
                 descriptionItem.style.display = 'none';
             }
@@ -271,11 +302,28 @@
             // Show/hide Spell 2 for Spellblade
             if (type === "path" && value === "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'block';
-                updateSpellOptions('spell1'); // Update spell options when Spellblade is selected
+                updateSpellOptions('spell1');
             } else if (type === "path" && value !== "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'none';
-                character.spells = [document.getElementById('spell1').value]; // Reset to one spell
-                updateSpellOptions('spell1'); // Reset spell options
+                character.spells = [document.getElementById('spell1').value];
+                updateSpellOptions('spell1');
+            }
+
+            // Update ability descriptions if type is ability
+            for (let i = 1; i <= 3; i++) {
+                const abilityId = `ability-select-${i}`;
+                const abilityDescId = `abilityDescription-${i}`;
+                const abilityValue = document.getElementById(abilityId) ? document.getElementById(abilityId).value : '';
+                const descItem = document.getElementById(abilityDescId);
+                if (abilityValue && abilityData[abilityValue]) {
+                    descItem.style.display = 'block';
+                    descItem.innerHTML = abilityData[abilityValue].description;
+                    const rect = document.getElementById(abilityId).getBoundingClientRect();
+                    descItem.style.top = `${rect.top + window.scrollY - 90}px`;
+                    descItem.style.left = `${0}px`;
+                } else {
+                    descItem.style.display = 'none';
+                }
             }
         }
 
@@ -288,11 +336,10 @@
             const spell2Value = spell2.value;
 
             if (changedSpell === 'spell1') {
-                // Update Spell 2 dropdown based on Spell 1 selection
                 const currentSpell2 = spell2.value;
-                spell2.innerHTML = ''; // Clear Spell 2 options
+                spell2.innerHTML = '';
                 spellOptions.forEach(option => {
-                    if (option === spell1Value) return; // Skip the spell chosen in Spell 1
+                    if (option === spell1Value) return;
                     const opt = document.createElement('option');
                     opt.value = option;
                     opt.text = option || "Select a Spell";
@@ -301,11 +348,10 @@
                     spell2.appendChild(opt);
                 });
             } else if (changedSpell === 'spell2') {
-                // Update Spell 1 dropdown based on Spell 2 selection
                 const currentSpell1 = spell1.value;
-                spell1.innerHTML = ''; // Clear Spell 1 options
+                spell1.innerHTML = '';
                 spellOptions.forEach(option => {
-                    if (option === spell2Value) return; // Skip the spell chosen in Spell 2
+                    if (option === spell2Value) return;
                     const opt = document.createElement('option');
                     opt.value = option;
                     opt.text = option || "Select a Spell";
@@ -332,7 +378,7 @@
             // Display individual rolls
             document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${rollAssignments.map(r => r.value).join(', ')}`;
 
-            // Reset assigned rolls
+            // Reset assigned rolls and abilities
             assignedRolls = {
                 mp: null,
                 str: null,
@@ -351,6 +397,11 @@
             document.getElementById('def').textContent = '-';
             document.getElementById('ap').textContent = '-';
             document.getElementById('luck').textContent = '-';
+            remainingAP = totalAP;
+            selectedAbilities = [];
+            document.getElementById('abilities').style.display = 'block'; // Show abilities after roll
+            document.getElementById('ap-left').textContent = remainingAP;
+            updateAbilityDropdowns();
 
             // Populate dropdowns with available rolls
             updateStatDropdowns();
@@ -358,27 +409,25 @@
 
         function updateStatDropdowns() {
             const stats = ['mp', 'str', 'def', 'ap', 'luck'];
-            // Calculate currently assigned roll IDs
             let assignedIds = stats.map(s => assignedRolls[s]).filter(id => id !== null);
 
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
                 const currentId = assignedRolls[stat];
                 const currentValue = currentId ? rollAssignments.find(r => r.id === currentId).value : 0;
-                select.innerHTML = ''; // Clear existing options
+                select.innerHTML = '';
                 const optDefault = document.createElement('option');
                 optDefault.value = '';
                 optDefault.text = 'Select';
-                optDefault.disabled = false; // Not removed
+                optDefault.disabled = false;
                 if (!currentId) optDefault.selected = true;
                 select.appendChild(optDefault);
 
-                // Add each roll to the dropdown if not assigned to another stat
                 rollAssignments.forEach(roll => {
                     if (!assignedIds.includes(roll.id) || roll.id === currentId) {
                         const opt = document.createElement('option');
                         opt.value = roll.id;
-                        opt.text = roll.value.toString(); // Display the roll value
+                        opt.text = roll.value.toString();
                         if (roll.id === currentId) opt.selected = true;
                         select.appendChild(opt);
                     }
@@ -386,22 +435,82 @@
             });
         }
 
+        function updateAbilityDropdowns() {
+            const maxAbilities = 3;
+            for (let i = 1; i <= maxAbilities; i++) {
+                const select = document.getElementById(`ability-select-${i}`);
+                if (select) {
+                    const currentAbility = selectedAbilities[i - 1] || '';
+                    select.innerHTML = '';
+                    const optDefault = document.createElement('option');
+                    optDefault.value = '';
+                    optDefault.text = 'Select an Ability';
+                    optDefault.disabled = false;
+                    if (!currentAbility) optDefault.selected = true;
+                    select.appendChild(optDefault);
+
+                    for (let ability in abilityData) {
+                        const apCost = abilityData[ability].apCost;
+                        if (apCost <= remainingAP) {
+                            const opt = document.createElement('option');
+                            opt.value = ability;
+                            opt.text = `${ability} (${apCost} AP)`;
+                            if (ability === currentAbility) opt.selected = true;
+                            select.appendChild(opt);
+                        }
+                    }
+                }
+            }
+            // Show next ability dropdown if an ability is selected
+            for (let i = 1; i < maxAbilities; i++) {
+                const currentSelect = document.getElementById(`ability-select-${i}`);
+                const nextSelect = document.getElementById(`ability-select-${i + 1}`);
+                if (currentSelect && nextSelect) {
+                    nextSelect.parentElement.style.display = currentSelect.value ? 'block' : 'none';
+                }
+            }
+        }
+
+        function assignAbility(index) {
+            const select = document.getElementById(`ability-select-${index}`);
+            const ability = select.value;
+            if (ability) {
+                // Remove previous ability if it exists
+                const previousAbility = selectedAbilities[index - 1];
+                if (previousAbility && abilityData[previousAbility]) {
+                    remainingAP += abilityData[previousAbility].apCost;
+                }
+                selectedAbilities[index - 1] = ability;
+                remainingAP -= abilityData[ability].apCost;
+                document.getElementById('ap-left').textContent = remainingAP;
+                character.abilities = selectedAbilities.filter(a => a); // Update character abilities
+                updateDescription('ability'); // Update ability description
+                updateAbilityDropdowns(); // Update dropdown options
+            } else if (selectedAbilities[index - 1]) {
+                // Unassign ability
+                const previousAbility = selectedAbilities[index - 1];
+                remainingAP += abilityData[previousAbility].apCost;
+                selectedAbilities[index - 1] = null;
+                document.getElementById('ap-left').textContent = remainingAP;
+                character.abilities = selectedAbilities.filter(a => a);
+                updateDescription('ability');
+                updateAbilityDropdowns();
+            }
+        }
+
         function assignStat(stat) {
             const select = document.getElementById(`${stat}-select`);
             const selectedId = select.value;
-            if (selectedId || selectedId === '') { // Allow null selection
-                // If there was a previously assigned value, unassign it
+            if (selectedId || selectedId === '') {
                 const previousId = assignedRolls[stat];
                 if (previousId) {
                     // No need to manage frequencies since we're using IDs
                 }
 
-                // Assign the new value (or null if 'Select' chosen)
                 assignedRolls[stat] = selectedId === '' ? null : selectedId;
                 character[stat] = selectedId === '' ? 0 : rollAssignments.find(r => r.id === selectedId).value;
                 document.getElementById(stat).textContent = character[stat] || '-';
 
-                // Update dropdowns
                 updateStatDropdowns();
             }
         }
@@ -420,11 +529,13 @@
             }
 
             character.backstory = document.getElementById('backstory').value || "A mysterious hero.";
+            character.abilities = selectedAbilities.filter(a => a);
 
             let output = `
                 Name: ${character.name}<br>
                 Path: ${character.path}<br>
                 Stats: HP ${character.hp}, MP ${character.mp}, Str ${character.str}, Def ${character.def}, AP ${character.ap}, Luck ${character.luck}<br>
+                Abilities: ${character.abilities.join(", ")}<br>
                 Keyblade: ${character.keyblade}<br>
                 Equipment: ${character.equipment}<br>
                 Spells: ${character.spells.join(", ")}<br>

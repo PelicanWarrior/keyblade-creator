@@ -190,7 +190,6 @@
             spells: [],
             backstory: ""
         };
-        let availableRolls = [];
         let originalRolls = [];
         let rollFrequencies = {}; // Track frequency of each roll
         let assignedRolls = {
@@ -305,7 +304,7 @@
             let remainingRolls = rolls.slice(4); // Last roll for initial available pool
             availableRolls = [...remainingRolls, ...Array(4).fill().map(() => Math.floor(Math.random() * 6) + 1)]; // Add 4 more rolls
             originalRolls = [...availableRolls]; // Store original rolls for dropdowns
-            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${availableRolls.join(', ')}`;
+            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${originalRolls.join(', ')}`;
 
             // Initialize roll frequencies
             rollFrequencies = {};
@@ -366,17 +365,15 @@
                 select.appendChild(optDefault);
 
                 // Add each roll to the dropdown based on its remaining frequency
-                let addedRolls = new Set(); // Track rolls added to avoid duplicates in display
                 originalRolls.forEach(roll => {
                     let rollValue = parseInt(roll);
                     let remainingCount = availableRollsWithFrequency[roll] || 0;
-                    if ((remainingCount > 0 || rollValue === currentValue) && !addedRolls.has(rollValue)) {
+                    if (remainingCount > 0 || rollValue === currentValue) {
                         const opt = document.createElement('option');
                         opt.value = rollValue;
                         opt.text = rollValue;
                         if (rollValue === currentValue) opt.selected = true;
                         select.appendChild(opt);
-                        addedRolls.add(rollValue);
                     }
                 });
             });

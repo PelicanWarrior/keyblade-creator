@@ -213,7 +213,7 @@
                 // Align with the corresponding dropdown
                 const dropdown = document.getElementById(type);
                 const rect = dropdown.getBoundingClientRect();
-                descriptionItem.style.top = `${rect.top + window.scrollY - 70}px`; // Adjust for header offset
+                descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`; // Adjusted offset to move up by one line (~20px)
             } else {
                 descriptionItem.style.display = 'none';
             }

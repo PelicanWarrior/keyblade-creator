@@ -199,9 +199,9 @@
                     <select id="spell2" onchange="updateSpellOptions('spell2')">
                         <option value="" disabled selected>Select a Spell</option>
                         <option value="Fire">Fire</option>
-                        <option value="Blizzard">Blizzard</option>
-                        <option value="Thunder">Thunder</option>
-                        <option value="Cure">Cure</option>
+                    <option value="Blizzard">Blizzard</option>
+                    <option value="Thunder">Thunder</option>
+                    <option value="Cure">Cure</option>
                     </select>
                 </div>
             </div>
@@ -250,6 +250,7 @@
         let totalAP = 5; // Initial AP value
         let remainingAP = totalAP;
         let selectedAbilities = [];
+        let currentRoleAbilities = [];
 
         const roleAbilities = {
             "Light Bearer": {
@@ -520,12 +521,12 @@
                     }
                 }
             }
-            // Show next ability dropdown if the current one has a selection
+            // Show the next ability dropdown if the current one has a selection
             for (let i = 1; i < maxAbilities; i++) {
                 const currentSelect = document.getElementById(`ability-select-${i}`);
-                const nextSelect = document.getElementById(`ability-select-${i + 1}`);
-                if (currentSelect && nextSelect) {
-                    nextSelect.parentElement.style.display = currentSelect.value && i < selectedAbilities.filter(a => a).length + 1 ? 'block' : 'none';
+                const nextSelectDiv = document.getElementById(`ability-${i + 1}`);
+                if (currentSelect && nextSelectDiv) {
+                    nextSelectDiv.style.display = currentSelect.value ? 'block' : 'none';
                 }
             }
         }
@@ -557,8 +558,13 @@
                 // Hide subsequent dropdowns if this is the last selected
                 for (let i = index + 1; i <= 3; i++) {
                     const nextSelect = document.getElementById(`ability-select-${i}`);
-                    if (nextSelect) nextSelect.parentElement.style.display = 'none';
+                    if (nextSelect) {
+                        nextSelect.parentElement.style.display = 'none';
+                        selectedAbilities[i - 1] = null; // Clear subsequent selections
+                    }
                 }
+                character.abilities = selectedAbilities.filter(a => a);
+                updateDescription('ability');
             }
         }
 

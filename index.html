@@ -192,6 +192,7 @@
         };
         let availableRolls = [];
         let originalRolls = [];
+        let rollFrequencies = {}; // Track frequency of each roll
         let assignedRolls = {
             mp: 0,
             str: 0,
@@ -306,6 +307,12 @@
             originalRolls = [...availableRolls]; // Store original rolls for dropdowns
             document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${availableRolls.join(', ')}`;
 
+            // Initialize roll frequencies
+            rollFrequencies = {};
+            originalRolls.forEach(roll => {
+                rollFrequencies[roll] = (rollFrequencies[roll] || 0) + 1;
+            });
+
             // Set HP automatically
             document.getElementById('hp').textContent = character.hp;
 
@@ -337,6 +344,16 @@
             // Calculate currently assigned rolls
             let assignedValues = stats.map(s => character[s]).filter(val => val !== 0); // All assigned values
 
+            // Calculate available rolls based on frequencies
+            let availableRollsWithFrequency = {};
+            for (let roll in rollFrequencies) {
+                let assignedCount = assignedValues.filter(val => val === parseInt(roll)).length;
+                let remainingCount = rollFrequencies[roll] - assignedCount;
+                if (remainingCount > 0) {
+                    availableRollsWithFrequency[roll] = remainingCount;
+                }
+            }
+
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
                 const currentValue = character[stat] || 0;
@@ -348,13 +365,16 @@
                 if (!currentValue) optDefault.selected = true;
                 select.appendChild(optDefault);
 
-                // Show all original rolls except those assigned to any stat
-                originalRolls.forEach(roll => {
-                    if (!assignedValues.includes(roll) || roll === currentValue) {
+                // Show all original rolls except those fully assigned to other stats
+                Object.keys(rollFrequencies).forEach(roll => {
+                    let rollValue = parseInt(roll);
+                    let isAssignedToAnother = assignedValues.includes(rollValue) && rollValue !== currentValue;
+                    let remainingCount = availableRollsWithFrequency[roll] || 0;
+                    if (remainingCount > 0 || rollValue === currentValue) {
                         const opt = document.createElement('option');
-                        opt.value = roll;
-                        opt.text = roll;
-                        if (roll === currentValue) opt.selected = true;
+                        opt.value = rollValue;
+                        opt.text = rollValue;
+                        if (rollValue === currentValue) opt.selected = true;
                         select.appendChild(opt);
                     }
                 });
@@ -368,22 +388,19 @@
                 // If there was a previously assigned value, return it to the pool
                 const previousValue = character[stat];
                 if (previousValue && previousValue !== 0) {
-                    // Only return to pool if not already assigned elsewhere
-                    let isAssignedElsewhere = Object.values(assignedRolls).filter(v => v !== 0 && v !== previousValue).includes(previousValue);
-                    if (!isAssignedElsewhere) {
-                        availableRolls.push(previousValue);
-                    }
+                    // Increment the frequency of the previous value
+                    rollFrequencies[previousValue] = (rollFrequencies[previousValue] || 0) + 1;
                 }
 
                 // Assign the new value (or null if 'Select' chosen)
                 character[stat] = value;
                 document.getElementById(stat).textContent = value || '-';
 
-                // Remove the newly assigned value from the pool if not null
+                // Decrement the frequency of the newly assigned value if not null
                 if (value !== 0) {
-                    const index = availableRolls.indexOf(value);
-                    if (index !== -1) {
-                        availableRolls.splice(index, 1); // Remove only the first instance
+                    rollFrequencies[value] = (rollFrequencies[value] || 0) - 1;
+                    if (rollFrequencies[value] <= 0) {
+                        delete rollFrequencies[value];
                     }
                 }
 

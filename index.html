@@ -69,6 +69,13 @@
         }
         #stats {
             margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .stat-group {
+            flex: 1;
+            min-width: 0; /* Allow wrapping if needed */
         }
         #dice-rolls {
             margin: 5px 0;
@@ -109,12 +116,18 @@
                 <button onclick="rollStats()">Roll Stats</button>
                 <div id="dice-rolls"></div>
                 <div id="stats">
-                    <p>HP: <span id="hp">-</span></p>
-                    <p>MP: <span id="mp">-</span> <select id="mp-select" class="stat-select" onchange="assignStat('mp')"></select></p>
-                    <p>Str: <span id="str">-</span> <select id="str-select" class="stat-select" onchange="assignStat('str')"></select></p>
-                    <p>Def: <span id="def">-</span> <select id="def-select" class="stat-select" onchange="assignStat('def')"></select></p>
-                    <p>AP: <span id="ap">-</span> <select id="ap-select" class="stat-select" onchange="assignStat('ap')"></select></p>
-                    <p>Luck: <span id="luck">-</span> <select id="luck-select" class="stat-select" onchange="assignStat('luck')"></select></p>
+                    <div class="stat-group">
+                        <p>HP: <span id="hp">-</span></p>
+                        <p>MP: <span id="mp">-</span> <select id="mp-select" class="stat-select" onchange="assignStat('mp')"></select></p>
+                        <p>Str: <span id="str">-</span> <select id="str-select" class="stat-select" onchange="assignStat('str')"></select></p>
+                    </div>
+                    <div class="stat-group">
+                        <p>Def: <span id="def">-</span> <select id="def-select" class="stat-select" onchange="assignStat('def')"></select></p>
+                        <p>AP: <span id="ap">-</span> <select id="ap-select" class="stat-select" onchange="assignStat('ap')"></select></p>
+                    </div>
+                    <div class="stat-group" style="flex-basis: 100%;">
+                        <p>Luck: <span id="luck">-</span> <select id="luck-select" class="stat-select" onchange="assignStat('luck')"></select></p>
+                    </div>
                 </div>
             </div>
             <div>
@@ -356,7 +369,7 @@
                     if (!assignedIds.includes(roll.id) || roll.id === currentId) {
                         const opt = document.createElement('option');
                         opt.value = roll.id;
-                        opt.text = roll.value;
+                        opt.text = roll.value.toString(); // Display the roll value
                         if (roll.id === currentId) opt.selected = true;
                         select.appendChild(opt);
                     }

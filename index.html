@@ -150,13 +150,8 @@
                         <option value="" selected>Select an Ability</option>
                     </select>
                 </div>
-                <div id="ability-2" style="display: none;">
+                <div id="ability-2">
                     <select id="ability-select-2" onchange="assignAbility(2)">
-                        <option value="" selected>Select an Ability</option>
-                    </select>
-                </div>
-                <div id="ability-3" style="display: none;">
-                    <select id="ability-select-3" onchange="assignAbility(3)">
                         <option value="" selected>Select an Ability</option>
                     </select>
                 </div>
@@ -199,9 +194,9 @@
                     <select id="spell2" onchange="updateSpellOptions('spell2')">
                         <option value="" disabled selected>Select a Spell</option>
                         <option value="Fire">Fire</option>
-                    <option value="Blizzard">Blizzard</option>
-                    <option value="Thunder">Thunder</option>
-                    <option value="Cure">Cure</option>
+                        <option value="Blizzard">Blizzard</option>
+                        <option value="Thunder">Thunder</option>
+                        <option value="Cure">Cure</option>
                     </select>
                 </div>
             </div>
@@ -218,7 +213,6 @@
             <div id="equipmentDescription" class="description-item"></div>
             <div id="abilityDescription-1" class="description-item"></div>
             <div id="abilityDescription-2" class="description-item"></div>
-            <div id="abilityDescription-3" class="description-item"></div>
         </div>
     </div>
 
@@ -343,8 +337,8 @@
                 updateSpellOptions('spell1');
             }
 
-            // Update ability descriptions if type is ability
-            for (let i = 1; i <= 3; i++) {
+            // Update ability descriptions
+            for (let i = 1; i <= 2; i++) {
                 const abilityId = `ability-select-${i}`;
                 const abilityDescId = `abilityDescription-${i}`;
                 const abilityValue = document.getElementById(abilityId) ? document.getElementById(abilityId).value : '';
@@ -370,13 +364,9 @@
                 remainingAP = totalAP;
                 document.getElementById('ap-left').textContent = remainingAP;
                 document.getElementById('abilities').style.display = 'block';
-                for (let i = 1; i <= 3; i++) {
+                for (let i = 1; i <= 2; i++) {
                     const abilityDiv = document.getElementById(`ability-${i}`);
-                    if (i === 1) {
-                        abilityDiv.style.display = 'block';
-                    } else {
-                        abilityDiv.style.display = 'none';
-                    }
+                    abilityDiv.style.display = 'block';
                 }
                 updateAbilityDropdowns();
             } else {
@@ -496,7 +486,7 @@
         }
 
         function updateAbilityDropdowns() {
-            const maxAbilities = 3;
+            const maxAbilities = 2;
             for (let i = 1; i <= maxAbilities; i++) {
                 const select = document.getElementById(`ability-select-${i}`);
                 if (select) {
@@ -509,9 +499,13 @@
                     if (!currentAbility) optDefault.selected = true;
                     select.appendChild(optDefault);
 
+                    // Exclude abilities selected in the other dropdown
+                    const otherIndex = i === 1 ? 2 : 1;
+                    const otherAbility = selectedAbilities[otherIndex - 1] || '';
+
                     for (let ability in currentRoleAbilities) {
                         const apCost = currentRoleAbilities[ability].apCost;
-                        if (apCost <= remainingAP && !selectedAbilities.includes(ability)) {
+                        if (apCost <= remainingAP && ability !== otherAbility) {
                             const opt = document.createElement('option');
                             opt.value = ability;
                             opt.text = `${ability} (${apCost} AP)`;
@@ -521,20 +515,12 @@
                     }
                 }
             }
-            // Show the next ability dropdown if the current one has a selection
-            for (let i = 1; i < maxAbilities; i++) {
-                const currentSelect = document.getElementById(`ability-select-${i}`);
-                const nextSelectDiv = document.getElementById(`ability-${i + 1}`);
-                if (currentSelect && nextSelectDiv) {
-                    nextSelectDiv.style.display = currentSelect.value ? 'block' : 'none';
-                }
-            }
         }
 
         function assignAbility(index) {
             const select = document.getElementById(`ability-select-${index}`);
             const ability = select.value;
-            if (ability && !selectedAbilities.includes(ability)) {
+            if (ability) {
                 // Remove previous ability if it exists at this index
                 const previousAbility = selectedAbilities[index - 1];
                 if (previousAbility && currentRoleAbilities[previousAbility]) {
@@ -546,7 +532,7 @@
                 character.abilities = selectedAbilities.filter(a => a); // Update character abilities
                 updateDescription('ability'); // Update ability description
                 updateAbilityDropdowns(); // Update dropdown options
-            } else if (ability === '' && selectedAbilities[index - 1]) {
+            } else if (selectedAbilities[index - 1]) {
                 // Unassign ability
                 const previousAbility = selectedAbilities[index - 1];
                 remainingAP += currentRoleAbilities[previousAbility].apCost;
@@ -555,16 +541,6 @@
                 character.abilities = selectedAbilities.filter(a => a);
                 updateDescription('ability');
                 updateAbilityDropdowns();
-                // Hide subsequent dropdowns if this is the last selected
-                for (let i = index + 1; i <= 3; i++) {
-                    const nextSelect = document.getElementById(`ability-select-${i}`);
-                    if (nextSelect) {
-                        nextSelect.parentElement.style.display = 'none';
-                        selectedAbilities[i - 1] = null; // Clear subsequent selections
-                    }
-                }
-                character.abilities = selectedAbilities.filter(a => a);
-                updateDescription('ability');
             }
         }
 

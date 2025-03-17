@@ -30,6 +30,7 @@
             padding: 20px;
             border-radius: 10px;
             position: relative; /* To contain absolutely positioned descriptions */
+            min-height: 500px; /* Ensure enough height to contain all descriptions */
         }
         .description-item {
             position: absolute;
@@ -214,7 +215,7 @@
                 const dropdown = document.getElementById(type);
                 const rect = dropdown.getBoundingClientRect();
                 descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`; // Adjusted offset to move up by one line
-                descriptionItem.style.left = `${rect.right + 20}px`; // 20px gap to the right
+                descriptionItem.style.left = `${rect.right + 5}px`; // Reduced gap to 5px for closer alignment
             } else {
                 descriptionItem.style.display = 'none';
             }

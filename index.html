@@ -365,17 +365,41 @@
                 if (!currentValue) optDefault.selected = true;
                 select.appendChild(optDefault);
 
-                // Show all original rolls except those fully assigned to other stats
-                Object.keys(rollFrequencies).forEach(roll => {
+                // Add each roll to the dropdown based on its remaining frequency
+                let addedRolls = new Set(); // Track rolls added to avoid duplicates in display
+                originalRolls.forEach(roll => {
                     let rollValue = parseInt(roll);
-                    let isAssignedToAnother = assignedValues.includes(rollValue) && rollValue !== currentValue;
                     let remainingCount = availableRollsWithFrequency[roll] || 0;
-                    if (remainingCount > 0 || rollValue === currentValue) {
+                    if ((remainingCount > 0 || rollValue === currentValue) && !addedRolls.has(rollValue)) {
                         const opt = document.createElement('option');
                         opt.value = rollValue;
                         opt.text = rollValue;
                         if (rollValue === currentValue) opt.selected = true;
                         select.appendChild(opt);
+                        addedRolls.add(rollValue);
+                    }
+                });
+
+                // Add duplicates based on frequency
+                addedRolls.clear();
+                originalRolls.forEach(roll => {
+                    let rollValue = parseInt(roll);
+                    let remainingCount = availableRollsWithFrequency[roll] || 0;
+                    if (remainingCount > 0 || rollValue === currentValue) {
+                        let displayCount = remainingCount;
+                        if (rollValue === currentValue && remainingCount === 0) {
+                            displayCount = 1; // Ensure the current value is shown even if fully assigned elsewhere
+                        }
+                        for (let i = 0; i < displayCount; i++) {
+                            if (!addedRolls.has(`${rollValue}-${i}`)) {
+                                const opt = document.createElement('option');
+                                opt.value = rollValue;
+                                opt.text = rollValue;
+                                if (rollValue === currentValue && i === 0) opt.selected = true;
+                                select.appendChild(opt);
+                                addedRolls.add(`${rollValue}-${i}`);
+                            }
+                        }
                     }
                 });
             });

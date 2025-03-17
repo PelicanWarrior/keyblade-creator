@@ -191,13 +191,13 @@
             backstory: ""
         };
         let originalRolls = [];
-        let rollFrequencies = {}; // Track frequency of each roll
+        let rollAssignments = []; // Store roll assignments with identifiers (e.g., [{id: "A", value: 6}, {id: "B", value: 2}, ...])
         let assignedRolls = {
-            mp: 0,
-            str: 0,
-            def: 0,
-            ap: 0,
-            luck: 0
+            mp: null,
+            str: null,
+            def: null,
+            ap: null,
+            luck: null
         };
 
         const descriptions = {
@@ -300,34 +300,30 @@
             hpRolls.sort((a, b) => a - b).shift(); // Drop lowest
             character.hp = hpRolls.reduce((sum, val) => sum + val, 0);
 
+            // Assign each roll a unique identifier (A, B, C, D, E)
+            const identifiers = ["A", "B", "C", "D", "E"];
+            originalRolls = rolls.map((roll, index) => ({
+                id: identifiers[index],
+                value: roll
+            }));
+
             // Display individual rolls
-            let remainingRolls = rolls.slice(4); // Last roll for initial available pool
-            availableRolls = [...remainingRolls, ...Array(4).fill().map(() => Math.floor(Math.random() * 6) + 1)]; // Add 4 more rolls
-            originalRolls = [...availableRolls]; // Store original rolls for dropdowns
-            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${originalRolls.join(', ')}`;
-
-            // Initialize roll frequencies
-            rollFrequencies = {};
-            originalRolls.forEach(roll => {
-                rollFrequencies[roll] = (rollFrequencies[roll] || 0) + 1;
-            });
-
-            // Set HP automatically
-            document.getElementById('hp').textContent = character.hp;
+            document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${originalRolls.map(r => r.value).join(', ')}`;
 
             // Reset assigned rolls
             assignedRolls = {
-                mp: 0,
-                str: 0,
-                def: 0,
-                ap: 0,
-                luck: 0
+                mp: null,
+                str: null,
+                def: null,
+                ap: null,
+                luck: null
             };
             character.mp = 0;
             character.str = 0;
             character.def = 0;
             character.ap = 0;
             character.luck = 0;
+            document.getElementById('hp').textContent = character.hp;
             document.getElementById('mp').textContent = '-';
             document.getElementById('str').textContent = '-';
             document.getElementById('def').textContent = '-';
@@ -340,39 +336,28 @@
 
         function updateStatDropdowns() {
             const stats = ['mp', 'str', 'def', 'ap', 'luck'];
-            // Calculate currently assigned rolls
-            let assignedValues = stats.map(s => character[s]).filter(val => val !== 0); // All assigned values
-
-            // Calculate available rolls based on frequencies
-            let availableRollsWithFrequency = {};
-            for (let roll in rollFrequencies) {
-                let assignedCount = assignedValues.filter(val => val === parseInt(roll)).length;
-                let remainingCount = rollFrequencies[roll] - assignedCount;
-                if (remainingCount > 0) {
-                    availableRollsWithFrequency[roll] = remainingCount;
-                }
-            }
+            // Calculate currently assigned roll IDs
+            let assignedIds = stats.map(s => assignedRolls[s]).filter(id => id !== null);
 
             stats.forEach(stat => {
                 const select = document.getElementById(`${stat}-select`);
-                const currentValue = character[stat] || 0;
+                const currentId = assignedRolls[stat];
+                const currentValue = currentId ? originalRolls.find(r => r.id === currentId).value : 0;
                 select.innerHTML = ''; // Clear existing options
                 const optDefault = document.createElement('option');
                 optDefault.value = '';
                 optDefault.text = 'Select';
                 optDefault.disabled = false; // Not removed
-                if (!currentValue) optDefault.selected = true;
+                if (!currentId) optDefault.selected = true;
                 select.appendChild(optDefault);
 
-                // Add each roll to the dropdown based on its remaining frequency
+                // Add each roll to the dropdown if not assigned to another stat
                 originalRolls.forEach(roll => {
-                    let rollValue = parseInt(roll);
-                    let remainingCount = availableRollsWithFrequency[roll] || 0;
-                    if (remainingCount > 0 || rollValue === currentValue) {
+                    if (!assignedIds.includes(roll.id) || roll.id === currentId) {
                         const opt = document.createElement('option');
-                        opt.value = rollValue;
-                        opt.text = rollValue;
-                        if (rollValue === currentValue) opt.selected = true;
+                        opt.value = roll.id;
+                        opt.text = roll.value;
+                        if (roll.id === currentId) opt.selected = true;
                         select.appendChild(opt);
                     }
                 });
@@ -381,26 +366,18 @@
 
         function assignStat(stat) {
             const select = document.getElementById(`${stat}-select`);
-            const value = parseInt(select.value);
-            if (value || value === 0) { // Allow null selection
-                // If there was a previously assigned value, return it to the pool
-                const previousValue = character[stat];
-                if (previousValue && previousValue !== 0) {
-                    // Increment the frequency of the previous value
-                    rollFrequencies[previousValue] = (rollFrequencies[previousValue] || 0) + 1;
+            const selectedId = select.value;
+            if (selectedId || selectedId === '') { // Allow null selection
+                // If there was a previously assigned value, unassign it
+                const previousId = assignedRolls[stat];
+                if (previousId) {
+                    // No need to manage frequencies since we're using IDs
                 }
 
                 // Assign the new value (or null if 'Select' chosen)
-                character[stat] = value;
-                document.getElementById(stat).textContent = value || '-';
-
-                // Decrement the frequency of the newly assigned value if not null
-                if (value !== 0) {
-                    rollFrequencies[value] = (rollFrequencies[value] || 0) - 1;
-                    if (rollFrequencies[value] <= 0) {
-                        delete rollFrequencies[value];
-                    }
-                }
+                assignedRolls[stat] = selectedId === '' ? null : selectedId;
+                character[stat] = selectedId === '' ? 0 : originalRolls.find(r => r.id === selectedId).value;
+                document.getElementById(stat).textContent = character[stat] || '-';
 
                 // Update dropdowns
                 updateStatDropdowns();

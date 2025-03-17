@@ -366,40 +366,15 @@
                 select.appendChild(optDefault);
 
                 // Add each roll to the dropdown based on its remaining frequency
-                let addedRolls = new Set(); // Track rolls added to avoid duplicates in display
                 originalRolls.forEach(roll => {
                     let rollValue = parseInt(roll);
                     let remainingCount = availableRollsWithFrequency[roll] || 0;
-                    if ((remainingCount > 0 || rollValue === currentValue) && !addedRolls.has(rollValue)) {
+                    if ((remainingCount > 0 || rollValue === currentValue) && remainingCount >= 0) {
                         const opt = document.createElement('option');
                         opt.value = rollValue;
                         opt.text = rollValue;
                         if (rollValue === currentValue) opt.selected = true;
                         select.appendChild(opt);
-                        addedRolls.add(rollValue);
-                    }
-                });
-
-                // Add duplicates based on frequency
-                addedRolls.clear();
-                originalRolls.forEach(roll => {
-                    let rollValue = parseInt(roll);
-                    let remainingCount = availableRollsWithFrequency[roll] || 0;
-                    if (remainingCount > 0 || rollValue === currentValue) {
-                        let displayCount = remainingCount;
-                        if (rollValue === currentValue && remainingCount === 0) {
-                            displayCount = 1; // Ensure the current value is shown even if fully assigned elsewhere
-                        }
-                        for (let i = 0; i < displayCount; i++) {
-                            if (!addedRolls.has(`${rollValue}-${i}`)) {
-                                const opt = document.createElement('option');
-                                opt.value = rollValue;
-                                opt.text = rollValue;
-                                if (rollValue === currentValue && i === 0) opt.selected = true;
-                                select.appendChild(opt);
-                                addedRolls.add(`${rollValue}-${i}`);
-                            }
-                        }
                     }
                 });
             });

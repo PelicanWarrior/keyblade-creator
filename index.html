@@ -29,14 +29,15 @@
             background: rgba(0, 0, 0, 0.8);
             padding: 20px;
             border-radius: 10px;
-            position: relative; /* To contain absolutely positioned descriptions */
-            min-height: 500px; /* Ensure enough height to contain all descriptions */
+            position: relative; /* Container for absolute positioning */
+            min-height: 500px; /* Ensure enough height for all descriptions */
         }
         .description-item {
             position: absolute;
-            width: 300px;
+            width: 100%; /* Full width of right column */
             margin-bottom: 10px;
             display: none; /* Hidden until selected */
+            left: 0; /* Align to the left edge of the right column */
         }
         label {
             display: block;
@@ -211,11 +212,13 @@
                 descriptionItem.style.display = 'block';
                 descriptionItem.innerHTML = descriptions[type][value];
 
-                // Align with the corresponding dropdown
+                // Align with the corresponding dropdown, inside the right column
                 const dropdown = document.getElementById(type);
                 const rect = dropdown.getBoundingClientRect();
+                const rightColumn = document.querySelector('.right-column');
+                const rightRect = rightColumn.getBoundingClientRect();
                 descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`; // Adjusted offset to move up by one line
-                descriptionItem.style.left = `${rect.right + 5}px`; // Reduced gap to 5px for closer alignment
+                descriptionItem.style.left = `${0}px`; // Align to the left edge of the right column
             } else {
                 descriptionItem.style.display = 'none';
             }

@@ -366,15 +366,17 @@
                 select.appendChild(optDefault);
 
                 // Add each roll to the dropdown based on its remaining frequency
+                let addedRolls = new Set(); // Track rolls added to avoid duplicates in display
                 originalRolls.forEach(roll => {
                     let rollValue = parseInt(roll);
                     let remainingCount = availableRollsWithFrequency[roll] || 0;
-                    if ((remainingCount > 0 || rollValue === currentValue) && remainingCount >= 0) {
+                    if ((remainingCount > 0 || rollValue === currentValue) && !addedRolls.has(rollValue)) {
                         const opt = document.createElement('option');
                         opt.value = rollValue;
                         opt.text = rollValue;
                         if (rollValue === currentValue) opt.selected = true;
                         select.appendChild(opt);
+                        addedRolls.add(rollValue);
                     }
                 });
             });

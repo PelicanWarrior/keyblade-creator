@@ -250,7 +250,6 @@
         let totalAP = 5; // Initial AP value
         let remainingAP = totalAP;
         let selectedAbilities = [];
-        let currentRoleAbilities = [];
 
         const roleAbilities = {
             "Light Bearer": {
@@ -349,9 +348,9 @@
                 const abilityDescId = `abilityDescription-${i}`;
                 const abilityValue = document.getElementById(abilityId) ? document.getElementById(abilityId).value : '';
                 const descItem = document.getElementById(abilityDescId);
-                if (abilityValue && currentRoleAbilities[abilityValue]) {
+                if (abilityValue && roleAbilities[character.path][abilityValue]) {
                     descItem.style.display = 'block';
-                    descItem.innerHTML = currentRoleAbilities[abilityValue].description;
+                    descItem.innerHTML = roleAbilities[character.path][abilityValue].description;
                     const rect = document.getElementById(abilityId).getBoundingClientRect();
                     descItem.style.top = `${rect.top + window.scrollY - 90}px`;
                     descItem.style.left = `${0}px`;
@@ -363,6 +362,7 @@
 
         function updateAbilitiesBasedOnRole() {
             const role = document.getElementById('path').value;
+            character.path = role; // Update character path
             if (role && roleAbilities[role]) {
                 currentRoleAbilities = roleAbilities[role];
                 selectedAbilities = [];
@@ -510,7 +510,7 @@
 
                     for (let ability in currentRoleAbilities) {
                         const apCost = currentRoleAbilities[ability].apCost;
-                        if (apCost <= remainingAP) {
+                        if (apCost <= remainingAP && !selectedAbilities.includes(ability)) {
                             const opt = document.createElement('option');
                             opt.value = ability;
                             opt.text = `${ability} (${apCost} AP)`;
@@ -520,12 +520,12 @@
                     }
                 }
             }
-            // Show next ability dropdown if an ability is selected
+            // Show next ability dropdown if the current one has a selection
             for (let i = 1; i < maxAbilities; i++) {
                 const currentSelect = document.getElementById(`ability-select-${i}`);
                 const nextSelect = document.getElementById(`ability-select-${i + 1}`);
                 if (currentSelect && nextSelect) {
-                    nextSelect.parentElement.style.display = currentSelect.value ? 'block' : 'none';
+                    nextSelect.parentElement.style.display = currentSelect.value && i < selectedAbilities.filter(a => a).length + 1 ? 'block' : 'none';
                 }
             }
         }
@@ -533,8 +533,8 @@
         function assignAbility(index) {
             const select = document.getElementById(`ability-select-${index}`);
             const ability = select.value;
-            if (ability) {
-                // Remove previous ability if it exists
+            if (ability && !selectedAbilities.includes(ability)) {
+                // Remove previous ability if it exists at this index
                 const previousAbility = selectedAbilities[index - 1];
                 if (previousAbility && currentRoleAbilities[previousAbility]) {
                     remainingAP += currentRoleAbilities[previousAbility].apCost;
@@ -545,7 +545,7 @@
                 character.abilities = selectedAbilities.filter(a => a); // Update character abilities
                 updateDescription('ability'); // Update ability description
                 updateAbilityDropdowns(); // Update dropdown options
-            } else if (selectedAbilities[index - 1]) {
+            } else if (ability === '' && selectedAbilities[index - 1]) {
                 // Unassign ability
                 const previousAbility = selectedAbilities[index - 1];
                 remainingAP += currentRoleAbilities[previousAbility].apCost;
@@ -554,6 +554,11 @@
                 character.abilities = selectedAbilities.filter(a => a);
                 updateDescription('ability');
                 updateAbilityDropdowns();
+                // Hide subsequent dropdowns if this is the last selected
+                for (let i = index + 1; i <= 3; i++) {
+                    const nextSelect = document.getElementById(`ability-select-${i}`);
+                    if (nextSelect) nextSelect.parentElement.style.display = 'none';
+                }
             }
         }
 

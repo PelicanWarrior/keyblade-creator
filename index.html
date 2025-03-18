@@ -38,6 +38,7 @@
             margin-bottom: 10px;
             display: none; /* Hidden until selected */
             left: 0; /* Align to the left edge of the right column */
+            z-index: 10; /* Ensure descriptions are above other content */
         }
         label {
             display: block;
@@ -334,20 +335,18 @@
 
         function updateDescription(type) {
             // Handle path, keyblade, and equipment descriptions
-            if (type !== 'ability') {
-                const value = document.getElementById(type).value;
-                const descriptionItem = document.getElementById(`${type}Description`);
+            const value = document.getElementById(type).value;
+            const descriptionItem = document.getElementById(`${type}Description`);
 
-                if (value && descriptions[type][value]) {
-                    descriptionItem.style.display = 'block';
-                    descriptionItem.innerHTML = descriptions[type][value];
-                    const rect = document.getElementById(type).getBoundingClientRect();
-                    const rightColumn = document.queryselector('.right-column');
-                    descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`;
-                    descriptionItem.style.left = `${0}px`;
-                } else {
-                    descriptionItem.style.display = 'none';
-                }
+            if (value && descriptions[type][value]) {
+                descriptionItem.style.display = 'block';
+                descriptionItem.innerHTML = descriptions[type][value];
+                const rect = document.getElementById(type).getBoundingClientRect();
+                const rightColumn = document.querySelector('.right-column');
+                descriptionItem.style.top = `${rect.top + window.scrollY}px`; // Adjusted to align with top of input
+                descriptionItem.style.left = `${rightColumn.offsetWidth + 30}px`; // Position to the right of the left column
+            } else {
+                descriptionItem.style.display = 'none';
             }
 
             // Update ability descriptions for both boxes immediately
@@ -362,8 +361,8 @@
                     abilityDesc1.style.display = 'block';
                     abilityDesc1.innerHTML = roleAbilities[character.path][ability1Value].description;
                     const rect1 = document.getElementById('ability-select-1').getBoundingClientRect();
-                    abilityDesc1.style.top = `${rect1.top + window.scrollY - 90}px`;
-                    abilityDesc1.style.left = `${0}px`;
+                    abilityDesc1.style.top = `${rect1.top + window.scrollY}px`;
+                    abilityDesc1.style.left = `${rightColumn.offsetWidth + 30}px`;
                 } else {
                     abilityDesc1.style.display = 'none';
                 }
@@ -373,8 +372,8 @@
                     abilityDesc2.style.display = 'block';
                     abilityDesc2.innerHTML = roleAbilities[character.path][ability2Value].description;
                     const rect2 = document.getElementById('ability-select-2').getBoundingClientRect();
-                    abilityDesc2.style.top = `${rect2.top + window.scrollY - 90}px`;
-                    abilityDesc2.style.left = `${0}px`;
+                    abilityDesc2.style.top = `${rect2.top + window.scrollY}px`;
+                    abilityDesc2.style.left = `${rightColumn.offsetWidth + 30}px`;
                 } else {
                     abilityDesc2.style.display = 'none';
                 }

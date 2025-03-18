@@ -360,14 +360,9 @@
                 }
             }, 0); // Slight delay to ensure DOM updates are processed
 
-            // Keep spell2Container always visible, update spell options based on path
+            // Keep spell2Container always visible
             document.getElementById('spell2Container').style.display = 'block';
-            if (character.path === "Spellblade") {
-                updateSpellOptions('spell1'); // Ensure spell options are updated
-            } else {
-                character.spells = [document.getElementById('spell1').value]; // Reset to single spell for non-Spellblade
-                updateSpellOptions('spell1');
-            }
+            updateSpellOptions('spell1'); // Ensure spell options are updated
         }
 
         function updateAbilitiesBasedOnRole() {
@@ -394,27 +389,23 @@
             const spell2Value = spell2.value;
 
             if (changedSpell === 'spell1') {
-                const currentSpell2 = spell2.value;
                 spell2.innerHTML = '';
                 spellOptions.forEach(option => {
-                    if (option === spell1Value || (character.path !== "Spellblade" && option !== "")) return;
                     const opt = document.createElement('option');
                     opt.value = option;
                     opt.text = option || "Select a Spell";
                     if (option === "") opt.disabled = true;
-                    if (option === currentSpell2) opt.selected = true;
+                    if (option === spell2Value) opt.selected = true;
                     spell2.appendChild(opt);
                 });
             } else if (changedSpell === 'spell2') {
-                const currentSpell1 = spell1.value;
                 spell1.innerHTML = '';
                 spellOptions.forEach(option => {
-                    if (option === spell2Value || (character.path !== "Spellblade" && option !== "")) return;
                     const opt = document.createElement('option');
                     opt.value = option;
                     opt.text = option || "Select a Spell";
                     if (option === "") opt.disabled = true;
-                    if (option === currentSpell1) opt.selected = true;
+                    if (option === spell1Value) opt.selected = true;
                     spell1.appendChild(opt);
                 });
             }

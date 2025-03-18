@@ -313,45 +313,52 @@
         };
 
         function updateDescription(type) {
-            const value = document.getElementById(type).value;
-            const descriptionItem = document.getElementById(`${type}Description`);
+            // Handle path, keyblade, and equipment descriptions
+            if (type !== 'ability') {
+                const value = document.getElementById(type).value;
+                const descriptionItem = document.getElementById(`${type}Description`);
 
-            if (value && descriptions[type][value]) {
-                descriptionItem.style.display = 'block';
-                descriptionItem.innerHTML = descriptions[type][value];
-                const rect = document.getElementById(type).getBoundingClientRect();
-                const rightColumn = document.querySelector('.right-column');
-                descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`;
-                descriptionItem.style.left = `${0}px`;
-            } else {
-                descriptionItem.style.display = 'none';
+                if (value && descriptions[type][value]) {
+                    descriptionItem.style.display = 'block';
+                    descriptionItem.innerHTML = descriptions[type][value];
+                    const rect = document.getElementById(type).getBoundingClientRect();
+                    const rightColumn = document.querySelector('.right-column');
+                    descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`;
+                    descriptionItem.style.left = `${0}px`;
+                } else {
+                    descriptionItem.style.display = 'none';
+                }
             }
 
             // Update ability descriptions for both boxes immediately
-            const ability1Value = document.getElementById('ability-select-1') ? document.getElementById('ability-select-1').value : '';
-            const ability2Value = document.getElementById('ability-select-2') ? document.getElementById('ability-select-2').value : '';
-            const abilityDesc1 = document.getElementById('abilityDescription-1');
-            const abilityDesc2 = document.getElementById('abilityDescription-2');
+            setTimeout(() => {
+                const ability1Value = document.getElementById('ability-select-1') ? document.getElementById('ability-select-1').value : '';
+                const ability2Value = document.getElementById('ability-select-2') ? document.getElementById('ability-select-2').value : '';
+                const abilityDesc1 = document.getElementById('abilityDescription-1');
+                const abilityDesc2 = document.getElementById('abilityDescription-2');
 
-            if (ability1Value && roleAbilities[character.path][ability1Value]) {
-                abilityDesc1.style.display = 'block';
-                abilityDesc1.innerHTML = roleAbilities[character.path][ability1Value].description;
-                const rect1 = document.getElementById('ability-select-1').getBoundingClientRect();
-                abilityDesc1.style.top = `${rect1.top + window.scrollY - 90}px`;
-                abilityDesc1.style.left = `${0}px`;
-            } else {
-                abilityDesc1.style.display = 'none';
-            }
+                // Update description for ability 1
+                if (ability1Value && roleAbilities[character.path] && roleAbilities[character.path][ability1Value]) {
+                    abilityDesc1.style.display = 'block';
+                    abilityDesc1.innerHTML = roleAbilities[character.path][ability1Value].description;
+                    const rect1 = document.getElementById('ability-select-1').getBoundingClientRect();
+                    abilityDesc1.style.top = `${rect1.top + window.scrollY - 90}px`;
+                    abilityDesc1.style.left = `${0}px`;
+                } else {
+                    abilityDesc1.style.display = 'none';
+                }
 
-            if (ability2Value && roleAbilities[character.path][ability2Value]) {
-                abilityDesc2.style.display = 'block';
-                abilityDesc2.innerHTML = roleAbilities[character.path][ability2Value].description;
-                const rect2 = document.getElementById('ability-select-2').getBoundingClientRect();
-                abilityDesc2.style.top = `${rect2.top + window.scrollY - 90}px`;
-                abilityDesc2.style.left = `${0}px`;
-            } else {
-                abilityDesc2.style.display = 'none';
-            }
+                // Update description for ability 2
+                if (ability2Value && roleAbilities[character.path] && roleAbilities[character.path][ability2Value]) {
+                    abilityDesc2.style.display = 'block';
+                    abilityDesc2.innerHTML = roleAbilities[character.path][ability2Value].description;
+                    const rect2 = document.getElementById('ability-select-2').getBoundingClientRect();
+                    abilityDesc2.style.top = `${rect2.top + window.scrollY - 90}px`;
+                    abilityDesc2.style.left = `${0}px`;
+                } else {
+                    abilityDesc2.style.display = 'none';
+                }
+            }, 0); // Slight delay to ensure DOM updates are processed
 
             // Show/hide Spell 2 for Spellblade
             if (type === "path" && value === "Spellblade") {
@@ -550,11 +557,12 @@
                     remainingAP -= apCost;
                     document.getElementById('ap-left').textContent = remainingAP;
                     character.abilities = selectedAbilities.filter(a => a); // Update character abilities
-                    updateDescription('ability'); // Update ability descriptions for both boxes
                     updateAbilityDropdowns(); // Update dropdown options
+                    updateDescription('ability'); // Update ability descriptions for both boxes
                 } else {
                     alert("Not enough AP to select this ability!");
                     select.value = ''; // Reset the dropdown to "Select an Ability"
+                    updateDescription('ability'); // Ensure description is cleared
                 }
             } else if (selectedAbilities[index - 1]) {
                 // Unassign ability
@@ -563,8 +571,8 @@
                 selectedAbilities[index - 1] = null;
                 document.getElementById('ap-left').textContent = remainingAP;
                 character.abilities = selectedAbilities.filter(a => a);
-                updateDescription('ability'); // Update ability descriptions for both boxes
                 updateAbilityDropdowns();
+                updateDescription('ability'); // Update ability descriptions for both boxes
             }
         }
 

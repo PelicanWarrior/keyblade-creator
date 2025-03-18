@@ -142,7 +142,7 @@
                     </div>
                 </div>
             </div>
-            <div id="abilities" style="display: none;">
+            <div id="abilities">
                 <label>Abilities</label>
                 <p>AP Left: <span id="ap-left">0</span></p>
                 <div id="ability-1">
@@ -380,18 +380,13 @@
                 // Set remainingAP to the assigned AP value, default to 0 if not set
                 remainingAP = character.ap || 0;
                 document.getElementById('ap-left').textContent = remainingAP;
-                document.getElementById('abilities').style.display = 'block';
-                for (let i = 1; i <= 2; i++) {
-                    const abilityDiv = document.getElementById(`ability-${i}`);
-                    abilityDiv.style.display = 'block';
-                }
                 updateAbilityDropdowns();
             } else {
-                document.getElementById('abilities').style.display = 'none';
                 currentRoleAbilities = {};
                 selectedAbilities = [];
                 remainingAP = character.ap || 0;
                 document.getElementById('ap-left').textContent = remainingAP;
+                updateAbilityDropdowns();
             }
         }
 
@@ -527,15 +522,18 @@
                     const otherIndex = i === 1 ? 2 : 1;
                     const otherAbility = selectedAbilities[otherIndex - 1] || '';
 
-                    for (let ability in currentRoleAbilities) {
-                        const apCost = currentRoleAbilities[ability].apCost;
-                        // Only show abilities with AP cost <= remainingAP and not selected in the other dropdown
-                        if (apCost <= remainingAP && ability !== otherAbility) {
-                            const opt = document.createElement('option');
-                            opt.value = ability;
-                            opt.text = `${ability} (${apCost} AP)`;
-                            if (ability === currentAbility) opt.selected = true;
-                            select.appendChild(opt);
+                    // Only populate if a role is selected
+                    if (currentRoleAbilities && Object.keys(currentRoleAbilities).length > 0) {
+                        for (let ability in currentRoleAbilities) {
+                            const apCost = currentRoleAbilities[ability].apCost;
+                            // Only show abilities with AP cost <= remainingAP and not selected in the other dropdown
+                            if (apCost <= remainingAP && ability !== otherAbility) {
+                                const opt = document.createElement('option');
+                                opt.value = ability;
+                                opt.text = `${ability} (${apCost} AP)`;
+                                if (ability === currentAbility) opt.selected = true;
+                                select.appendChild(opt);
+                            }
                         }
                     }
                 }

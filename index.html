@@ -97,6 +97,24 @@
             background: #2a2a4a;
             border-radius: 5px;
         }
+        .hp-mp-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .hp-mp-input {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+        }
+        .hp-mp-max {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            background-color: #333;
+            border: none;
+            color: white;
+        }
         h1 {
             text-align: center;
         }
@@ -221,7 +239,9 @@
             name: "",
             path: "",
             hp: 0,
+            maxHp: 0,
             mp: 0,
+            maxMp: 0,
             str: 0,
             def: 0,
             ap: 0,
@@ -322,7 +342,7 @@
                     descriptionItem.style.display = 'block';
                     descriptionItem.innerHTML = descriptions[type][value];
                     const rect = document.getElementById(type).getBoundingClientRect();
-                    const rightColumn = document.querySelector('.right-column');
+                    const rightColumn = document.queryselector('.right-column');
                     descriptionItem.style.top = `${rect.top + window.scrollY - 90}px`;
                     descriptionItem.style.left = `${0}px`;
                 } else {
@@ -416,6 +436,9 @@
             let hpRolls = rolls.slice(0, 4); // Use first 4 for HP
             hpRolls.sort((a, b) => a - b).shift(); // Drop lowest
             character.hp = hpRolls.reduce((sum, val) => sum + val, 0);
+            character.maxHp = character.hp; // Set maximum HP
+            character.mp = rolls[4]; // Use the 5th roll for MP
+            character.maxMp = character.mp; // Set maximum MP
 
             // Assign each roll a unique identifier (A, B, C, D, E)
             const identifiers = ["A", "B", "C", "D", "E"];
@@ -435,13 +458,12 @@
                 ap: null,
                 luck: null
             };
-            character.mp = 0;
             character.str = 0;
             character.def = 0;
             character.ap = 0;
             character.luck = 0;
             document.getElementById('hp').textContent = character.hp;
-            document.getElementById('mp').textContent = '-';
+            document.getElementById('mp').textContent = character.mp;
             document.getElementById('str').textContent = '-';
             document.getElementById('def').textContent = '-';
             document.getElementById('ap').textContent = '-';
@@ -608,18 +630,59 @@
             character.backstory = document.getElementById('backstory').value || "A mysterious hero.";
             character.abilities = selectedAbilities.filter(a => a);
 
+            // Generate output with HP and MP tracking
             let output = `
-                Name: ${character.name}<br>
-                Path: ${character.path}<br>
-                Stats: HP ${character.hp}, MP ${character.mp}, Str ${character.str}, Def ${character.def}, AP ${character.ap}, Luck ${character.luck}<br>
-                Abilities: ${character.abilities.join(", ")}<br>
-                Keyblade: ${character.keyblade}<br>
-                Equipment: ${character.equipment}<br>
-                Spells: ${character.spells.join(", ")}<br>
-                Backstory: ${character.backstory}
+                <h3>Character Sheet</h3>
+                <p>Name: ${character.name}</p>
+                <p>Path: ${character.path}</p>
+                <p>Stats: HP ${character.hp}, MP ${character.mp}, Str ${character.str}, Def ${character.def}, AP ${character.ap}, Luck ${character.luck}</p>
+                <p>Abilities: ${character.abilities.join(", ") || "None"}</p>
+                <p>Keyblade: ${character.keyblade}</p>
+                <p>Equipment: ${character.equipment}</p>
+                <p>Spells: ${character.spells.join(", ") || "None"}</p>
+                <p>Backstory: ${character.backstory}</p>
+                <div>
+                    <label>HP:</label>
+                    <div class="hp-mp-container">
+                        <input type="number" class="hp-mp-input" id="current-hp" value="${character.hp}" min="0" max="${character.maxHp}" onchange="updateCurrentHP()">
+                        <span> / </span>
+                        <input type="number" class="hp-mp-max" id="max-hp" value="${character.maxHp}" readonly>
+                    </div>
+                </div>
+                <div>
+                    <label>MP:</label>
+                    <div class="hp-mp-container">
+                        <input type="number" class="hp-mp-input" id="current-mp" value="${character.mp}" min="0" max="${character.maxMp}" onchange="updateCurrentMP()">
+                        <span> / </span>
+                        <input type="number" class="hp-mp-max" id="max-mp" value="${character.maxMp}" readonly>
+                    </div>
+                </div>
             `;
             document.getElementById('output').innerHTML = output;
+
+            // Ensure initial values are set
+            character.hp = character.maxHp;
+            character.mp = character.maxMp;
+            document.getElementById('current-hp').value = character.hp;
+            document.getElementById('current-mp').value = character.mp;
         }
+
+        // Function to update current HP
+        function updateCurrentHP() {
+            const currentHP = document.getElementById('current-hp').value;
+            const maxHP = document.getElementById('max-hp').value;
+            character.hp = Math.min(Math.max(currentHP, 0), maxHP);
+            document.getElementById('current-hp').value = character.hp;
+        }
+
+        // Function to update current MP
+        function updateCurrentMP() {
+            const currentMP = document.getElementById('current-mp').value;
+            const maxMP = document.getElementById('max-mp').value;
+            character.mp = Math.min(Math.max(currentMP, 0), maxMP);
+            document.getElementById('current-mp').value = character.mp;
+        }
+
     </script>
 </body>
 </html>

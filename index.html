@@ -244,7 +244,7 @@
         let totalAP = 0; // Initial AP value will be set by assigned AP stat
         let remainingAP = 0;
         let selectedAbilities = [];
-        let currentRoleAbilities = [];
+        let currentRoleAbilities = {};
 
         const roleAbilities = {
             "Light Bearer": {
@@ -376,18 +376,14 @@
             character.path = role; // Update character path
             if (role && roleAbilities[role]) {
                 currentRoleAbilities = roleAbilities[role];
-                selectedAbilities = [];
-                // Set remainingAP to the assigned AP value, default to 0 if not set
-                remainingAP = character.ap || 0;
-                document.getElementById('ap-left').textContent = remainingAP;
-                updateAbilityDropdowns();
             } else {
                 currentRoleAbilities = {};
-                selectedAbilities = [];
-                remainingAP = character.ap || 0;
-                document.getElementById('ap-left').textContent = remainingAP;
-                updateAbilityDropdowns();
             }
+            selectedAbilities = [];
+            // Set remainingAP to the assigned AP value, default to 0 if not set
+            remainingAP = character.ap || 0;
+            document.getElementById('ap-left').textContent = remainingAP;
+            updateAbilityDropdowns();
         }
 
         function updateSpellOptions(changedSpell) {
@@ -522,7 +518,7 @@
                     const otherIndex = i === 1 ? 2 : 1;
                     const otherAbility = selectedAbilities[otherIndex - 1] || '';
 
-                    // Only populate if a role is selected
+                    // Populate with all abilities for the selected path, if a path is chosen
                     if (currentRoleAbilities && Object.keys(currentRoleAbilities).length > 0) {
                         for (let ability in currentRoleAbilities) {
                             const apCost = currentRoleAbilities[ability].apCost;

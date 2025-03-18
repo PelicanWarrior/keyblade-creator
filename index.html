@@ -192,7 +192,7 @@
                 <div id="spell2Container" style="display: none;">
                     <label for="spell2">Spell 2 (Spellblade only):</label>
                     <select id="spell2" onchange="updateSpellOptions('spell2')">
-                        <option value="" disabled selected>Select a Spell</option>
+                        <option value="" disabled selected>Select an Ability</option>
                         <option value="Fire">Fire</option>
                         <option value="Blizzard">Blizzard</option>
                         <option value="Thunder">Thunder</option>
@@ -513,7 +513,8 @@
 
                     for (let ability in currentRoleAbilities) {
                         const apCost = currentRoleAbilities[ability].apCost;
-                        if (apCost <= remainingAP && ability !== otherAbility && !selectedAbilities.includes(ability)) {
+                        // Only show abilities with AP cost <= remainingAP and not selected in the other dropdown
+                        if (apCost <= remainingAP && ability !== otherAbility) {
                             const opt = document.createElement('option');
                             opt.value = ability;
                             opt.text = `${ability} (${apCost} AP)`;
@@ -528,19 +529,25 @@
         function assignAbility(index) {
             const select = document.getElementById(`ability-select-${index}`);
             const ability = select.value;
-            if (ability && !selectedAbilities.includes(ability)) {
-                // Remove previous ability if it exists at this index
-                const previousAbility = selectedAbilities[index - 1];
-                if (previousAbility && currentRoleAbilities[previousAbility]) {
-                    remainingAP += currentRoleAbilities[previousAbility].apCost;
+            if (ability) {
+                const apCost = currentRoleAbilities[ability].apCost;
+                if (apCost <= remainingAP) {
+                    // Remove previous ability if it exists at this index
+                    const previousAbility = selectedAbilities[index - 1];
+                    if (previousAbility && currentRoleAbilities[previousAbility]) {
+                        remainingAP += currentRoleAbilities[previousAbility].apCost;
+                    }
+                    selectedAbilities[index - 1] = ability;
+                    remainingAP -= apCost;
+                    document.getElementById('ap-left').textContent = remainingAP;
+                    character.abilities = selectedAbilities.filter(a => a); // Update character abilities
+                    updateDescription('ability'); // Update ability description
+                    updateAbilityDropdowns(); // Update dropdown options
+                } else {
+                    alert("Not enough AP to select this ability!");
+                    select.value = ''; // Reset the dropdown to "Select an Ability"
                 }
-                selectedAbilities[index - 1] = ability;
-                remainingAP -= currentRoleAbilities[ability].apCost;
-                document.getElementById('ap-left').textContent = remainingAP;
-                character.abilities = selectedAbilities.filter(a => a); // Update character abilities
-                updateDescription('ability'); // Update ability description
-                updateAbilityDropdowns(); // Update dropdown options
-            } else if (ability === '' && selectedAbilities[index - 1]) {
+            } else if (selectedAbilities[index - 1]) {
                 // Unassign ability
                 const previousAbility = selectedAbilities[index - 1];
                 remainingAP += currentRoleAbilities[previousAbility].apCost;
@@ -567,7 +574,15 @@
 
                 // Update remainingAP when AP is assigned
                 if (stat === 'ap') {
-                    remainingAP = character.ap || 0;
+                    // If AP is unassigned, reset remainingAP to 0
+                    if (selectedId === '') {
+                        remainingAP = 0;
+                    } else {
+                        // When AP is assigned, reset remainingAP to the new AP value
+                        remainingAP = character.ap;
+                        // Reset selected abilities to start fresh with new AP value
+                        selectedAbilities = [];
+                    }
                     document.getElementById('ap-left').textContent = remainingAP;
                     updateAbilityDropdowns();
                 }

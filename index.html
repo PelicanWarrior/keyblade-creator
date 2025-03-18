@@ -361,10 +361,10 @@
             }, 0); // Slight delay to ensure DOM updates are processed
 
             // Show/hide Spell 2 for Spellblade
-            if (type === "path" && value === "Spellblade") {
+            if (type === "path" && document.getElementById('path').value === "Spellblade") {
                 document.getElementById('spell2Container').style.display = 'block';
                 updateSpellOptions('spell1');
-            } else if (type === "path" && value !== "Spellblade") {
+            } else {
                 document.getElementById('spell2Container').style.display = 'none';
                 character.spells = [document.getElementById('spell1').value];
                 updateSpellOptions('spell1');
@@ -522,8 +522,8 @@
                     if (currentRoleAbilities && Object.keys(currentRoleAbilities).length > 0) {
                         for (let ability in currentRoleAbilities) {
                             const apCost = currentRoleAbilities[ability].apCost;
-                            // Only show abilities with AP cost <= remainingAP and not selected in the other dropdown
-                            if (apCost <= remainingAP && ability !== otherAbility) {
+                            // Only show abilities not selected in the other dropdown
+                            if (ability !== otherAbility) {
                                 const opt = document.createElement('option');
                                 opt.value = ability;
                                 opt.text = `${ability} (${apCost} AP)`;

@@ -189,8 +189,8 @@
                     <option value="Thunder">Thunder</option>
                     <option value="Cure">Cure</option>
                 </select>
-                <div id="spell2Container" style="display: none;">
-                    <label for="spell2">Spell 2 (Spellblade only):</label>
+                <div id="spell2Container">
+                    <label for="spell2">Spell 2:</label>
                     <select id="spell2" onchange="updateSpellOptions('spell2')">
                         <option value="" disabled selected>Select a Spell</option>
                         <option value="Fire">Fire</option>
@@ -360,13 +360,12 @@
                 }
             }, 0); // Slight delay to ensure DOM updates are processed
 
-            // Show/hide Spell 2 for Spellblade
-            if (type === "path" && document.getElementById('path').value === "Spellblade") {
-                document.getElementById('spell2Container').style.display = 'block';
-                updateSpellOptions('spell1');
+            // Keep spell2Container always visible, update spell options based on path
+            document.getElementById('spell2Container').style.display = 'block';
+            if (character.path === "Spellblade") {
+                updateSpellOptions('spell1'); // Ensure spell options are updated
             } else {
-                document.getElementById('spell2Container').style.display = 'none';
-                character.spells = [document.getElementById('spell1').value];
+                character.spells = [document.getElementById('spell1').value]; // Reset to single spell for non-Spellblade
                 updateSpellOptions('spell1');
             }
         }
@@ -398,7 +397,7 @@
                 const currentSpell2 = spell2.value;
                 spell2.innerHTML = '';
                 spellOptions.forEach(option => {
-                    if (option === spell1Value) return;
+                    if (option === spell1Value || (character.path !== "Spellblade" && option !== "")) return;
                     const opt = document.createElement('option');
                     opt.value = option;
                     opt.text = option || "Select a Spell";
@@ -410,7 +409,7 @@
                 const currentSpell1 = spell1.value;
                 spell1.innerHTML = '';
                 spellOptions.forEach(option => {
-                    if (option === spell2Value) return;
+                    if (option === spell2Value || (character.path !== "Spellblade" && option !== "")) return;
                     const opt = document.createElement('option');
                     opt.value = option;
                     opt.text = option || "Select a Spell";
@@ -610,7 +609,7 @@
 
             let spell1 = document.getElementById('spell1').value;
             character.spells = [spell1];
-            if (character.path === "Spellblade") {
+            if (character.path === "Spellblade" && document.getElementById('spell2').value) {
                 let spell2 = document.getElementById('spell2').value;
                 if (spell2 && spell2 !== spell1) character.spells.push(spell2);
             }

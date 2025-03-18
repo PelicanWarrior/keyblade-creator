@@ -333,16 +333,6 @@
             }
         };
 
-        // Add keyblade damage modifiers
-        const keybladeDamageModifiers = {
-            "Kingdom Key": "+2",
-            "Way to Dawn": "+3",
-            "Star Seeker": "+2",
-            "Earthshaker": "+4",
-            "Oathkeeper": "+3",
-            "Rainfell": "+2"
-        };
-
         function updateDescription(type) {
             // Handle path, keyblade, and equipment descriptions
             const value = document.getElementById(type).value;
@@ -454,7 +444,7 @@
             rollAssignments = rolls.map((roll, index) => ({
                 id: identifiers[index],
                 value: roll
-            }));
+           )));
 
             // Display individual rolls
             document.getElementById('dice-rolls').innerHTML = `Dice Rolled: ${rollAssignments.map(r => r.value).join(', ')}`;
@@ -647,7 +637,7 @@
                 <p>Stats: HP ${character.hp}, MP ${character.mp}, Str ${character.str}, Def ${character.def}, AP ${character.ap}, Luck ${character.luck}</p>
                 <p>Abilities: ${character.abilities.map(ability => 
                     `${ability} - ${roleAbilities[character.path][ability].description}`).join("<br>") || "None"}</p>
-                <p>Keyblade: ${character.keyblade} (Damage Modifier: ${keybladeDamageModifiers[character.keyblade] || "N/A"})</p>
+                <p>Keyblade: ${character.keyblade} (Damage: 1d6 + Strength)</p>
                 <p>Equipment: ${character.equipment} - ${descriptions.equipment[character.equipment] || "None"}</p>
                 <p>Spells: ${character.spells.join(", ") || "None"}</p>
                 <p>Backstory: ${character.backstory}</p>

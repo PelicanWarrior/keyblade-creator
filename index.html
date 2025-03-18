@@ -144,7 +144,7 @@
             </div>
             <div id="abilities" style="display: none;">
                 <label>Abilities</label>
-                <p>AP Left: <span id="ap-left">5</span></p>
+                <p>AP Left: <span id="ap-left">0</span></p>
                 <div id="ability-1">
                     <select id="ability-select-1" onchange="assignAbility(1)">
                         <option value="" selected>Select an Ability</option>
@@ -241,8 +241,8 @@
             ap: null,
             luck: null
         };
-        let totalAP = 5; // Initial AP value
-        let remainingAP = totalAP;
+        let totalAP = 0; // Initial AP value will be set by assigned AP stat
+        let remainingAP = 0;
         let selectedAbilities = [];
         let currentRoleAbilities = [];
 
@@ -361,7 +361,8 @@
             if (role && roleAbilities[role]) {
                 currentRoleAbilities = roleAbilities[role];
                 selectedAbilities = [];
-                remainingAP = totalAP;
+                // Set remainingAP to the assigned AP value, default to 0 if not set
+                remainingAP = character.ap || 0;
                 document.getElementById('ap-left').textContent = remainingAP;
                 document.getElementById('abilities').style.display = 'block';
                 for (let i = 1; i <= 2; i++) {
@@ -373,7 +374,7 @@
                 document.getElementById('abilities').style.display = 'none';
                 currentRoleAbilities = {};
                 selectedAbilities = [];
-                remainingAP = totalAP;
+                remainingAP = character.ap || 0;
                 document.getElementById('ap-left').textContent = remainingAP;
             }
         }
@@ -448,7 +449,7 @@
             document.getElementById('def').textContent = '-';
             document.getElementById('ap').textContent = '-';
             document.getElementById('luck').textContent = '-';
-            remainingAP = totalAP;
+            remainingAP = character.ap || 0; // Set remainingAP to the assigned AP value
             selectedAbilities = [];
             document.getElementById('ap-left').textContent = remainingAP;
             updateAbilityDropdowns();
@@ -483,6 +484,13 @@
                     }
                 });
             });
+
+            // Update remainingAP when AP is assigned
+            if (stat === 'ap' && currentId) {
+                remainingAP = currentValue;
+                document.getElementById('ap-left').textContent = remainingAP;
+                updateAbilityDropdowns();
+            }
         }
 
         function updateAbilityDropdowns() {
@@ -505,7 +513,7 @@
 
                     for (let ability in currentRoleAbilities) {
                         const apCost = currentRoleAbilities[ability].apCost;
-                        if (apCost <= remainingAP && ability !== otherAbility) {
+                        if (apCost <= remainingAP && ability !== otherAbility && !selectedAbilities.includes(ability)) {
                             const opt = document.createElement('option');
                             opt.value = ability;
                             opt.text = `${ability} (${apCost} AP)`;
@@ -520,7 +528,7 @@
         function assignAbility(index) {
             const select = document.getElementById(`ability-select-${index}`);
             const ability = select.value;
-            if (ability) {
+            if (ability && !selectedAbilities.includes(ability)) {
                 // Remove previous ability if it exists at this index
                 const previousAbility = selectedAbilities[index - 1];
                 if (previousAbility && currentRoleAbilities[previousAbility]) {
@@ -532,7 +540,7 @@
                 character.abilities = selectedAbilities.filter(a => a); // Update character abilities
                 updateDescription('ability'); // Update ability description
                 updateAbilityDropdowns(); // Update dropdown options
-            } else if (selectedAbilities[index - 1]) {
+            } else if (ability === '' && selectedAbilities[index - 1]) {
                 // Unassign ability
                 const previousAbility = selectedAbilities[index - 1];
                 remainingAP += currentRoleAbilities[previousAbility].apCost;
@@ -556,6 +564,13 @@
                 assignedRolls[stat] = selectedId === '' ? null : selectedId;
                 character[stat] = selectedId === '' ? 0 : rollAssignments.find(r => r.id === selectedId).value;
                 document.getElementById(stat).textContent = character[stat] || '-';
+
+                // Update remainingAP when AP is assigned
+                if (stat === 'ap') {
+                    remainingAP = character.ap || 0;
+                    document.getElementById('ap-left').textContent = remainingAP;
+                    updateAbilityDropdowns();
+                }
 
                 updateStatDropdowns();
             }
